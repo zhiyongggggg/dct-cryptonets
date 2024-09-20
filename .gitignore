@@ -1,0 +1,32 @@
+# Environments
+.venv
+
+# Mac Stuff
+.DS_Store
+
+# PyCharm
+.idea
+
+# Data files
+**\.hdf5
+**\.csv
+**\.json
+**\.net
+**\.tar.gz
+**\.pt
+**\.pkl
+**\.txt
+
+# Byte-compiled
+__pycache__/
+*.py[cod]
+
+# Local directories
+/data
+/results
+/lib
+/checkpoints
+
+# 3rd party library loggers
+**/.artifacts
+**/.pytest_cache
