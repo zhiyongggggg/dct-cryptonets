@@ -1,5 +1,5 @@
 """
-Homomorphic Evaluation
+Homomorphic Evaluation of DCT-CryptoNets
 
 author: Arjun Roy <roy208@purdue.edu>
 """
@@ -19,7 +19,7 @@ from torch.autograd import Variable
 from torch.utils.data.sampler import SubsetRandomSampler
 from torchinfo import summary
 from sklearn.model_selection import train_test_split
-from concrete.ml.torch.compile import compile_torch_model, compile_brevitas_qat_model, compile_onnx_model, compile_onnx_model
+from concrete.ml.torch.compile import compile_torch_model, compile_brevitas_qat_model
 from concrete.fhe import Configuration
 
 # Local modules
@@ -109,23 +109,11 @@ def main():
             Color=0.1,
         )
     if params.dct_status:
-        train_datamgr = SimpleDataManager(
-            params.image_size_dct,
-            batch_size=params.calib_batch_size,
-            normalize_param=normalize_param,
-            jitter_param=jitter_param,
-        )
         test_datamgr = SimpleDataManager(
             params.image_size_dct,
             batch_size=params.test_batch_size,
             normalize_param=normalize_param,
             jitter_param=jitter_param,
-        )
-        train_transform = train_datamgr.trans_loader.get_composed_transform_dct_img(
-            aug=params.train_aug,
-            filter_size=params.filter_size,
-            channels=params.channels,
-            dct_pattern=params.dct_pattern,
         )
         test_transform = test_datamgr.trans_loader.get_composed_transform_dct_img(
             aug=False,
@@ -134,20 +122,15 @@ def main():
             dct_pattern=params.dct_pattern,
         )
     else:
-        train_datamgr = SimpleDataManager(
-            params.image_size,
-            batch_size=params.calib_batch_size,
-            normalize_param=normalize_param,
-            jitter_param=jitter_param,
-        )
         test_datamgr = SimpleDataManager(
             params.image_size,
             batch_size=params.test_batch_size,
             normalize_param=normalize_param,
             jitter_param=jitter_param,
         )
-        train_transform = train_datamgr.trans_loader.get_composed_transform(aug=params.train_aug)
-        test_transform = test_datamgr.trans_loader.get_composed_transform(aug=False)
+        test_transform = test_datamgr.trans_loader.get_composed_transform(
+            aug=False
+        )
 
     # Dataset
     if params.dataset == 'cifar10':
@@ -158,21 +141,15 @@ def main():
 
         num_train = len(trainset)
         train_idx, val_idx = train_test_split(np.arange(num_train), test_size=params.test_subset, random_state=42)
-        train_sampler = SubsetRandomSampler(train_idx)
         val_sampler = SubsetRandomSampler(val_idx)
 
         num_test = len(testset)
         _, test_idx = train_test_split(np.arange(num_test), test_size=params.test_batch_size, random_state=42)
         test_sampler = SubsetRandomSampler(test_idx)
 
-        _, execution_idx = train_test_split(np.arange(num_test), test_size=params.test_subset, random_state=42)
-        execution_sampler = SubsetRandomSampler(execution_idx)
-
-        train_loader = torch.utils.data.DataLoader(trainset, batch_size=params.calib_batch_size, sampler=train_sampler)
         calib_loader = torch.utils.data.DataLoader(calibset, batch_size=params.calib_batch_size, shuffle=False)
         val_loader = torch.utils.data.DataLoader(valset, batch_size=params.test_batch_size, sampler=val_sampler)
         test_loader = torch.utils.data.DataLoader(testset, batch_size=params.test_batch_size, sampler=test_sampler)
-        execution_loader = torch.utils.data.DataLoader(testset, batch_size=params.test_subset, sampler=execution_sampler)
 
     elif params.dataset == 'Imagenette':
         trainset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'train'), transform=test_transform)
@@ -182,14 +159,12 @@ def main():
 
         num_train = len(trainset)
         train_idx, val_idx = train_test_split(np.arange(num_train), test_size=params.test_subset, random_state=42)
-        train_sampler = SubsetRandomSampler(train_idx)
         val_sampler = SubsetRandomSampler(val_idx)
 
         num_test = len(testset)
         _, test_idx = train_test_split(np.arange(num_test), test_size=params.test_subset, random_state=42)
         test_sampler = SubsetRandomSampler(test_idx)
 
-        train_loader = torch.utils.data.DataLoader(trainset, batch_size=params.calib_batch_size, sampler=train_sampler)
         calib_loader = torch.utils.data.DataLoader(calibset, batch_size=params.calib_batch_size, shuffle=False)
         val_loader = torch.utils.data.DataLoader(valset, batch_size=params.test_batch_size, sampler=val_sampler)
         test_loader = torch.utils.data.DataLoader(testset, batch_size=params.test_batch_size, sampler=test_sampler)
@@ -198,12 +173,9 @@ def main():
         base_file = params.dataset_path + 'base.json'
         test_file = params.dataset_path + 'val.json'
         if params.dct_status:
-            base_datamgr = SimpleDataManager(params.image_size_dct, batch_size=params.calib_batch_size)
             base_datamgr_val = SimpleDataManager(params.image_size_dct, batch_size=params.test_batch_size)
             test_datamgr = SimpleDataManager(params.image_size_dct, batch_size=params.test_batch_size)
 
-            train_loader, trainset = base_datamgr.get_data_loader_dct(
-                base_file, aug=False, filter_size=params.filter_size, channels=params.channels)
             calib_loader, valset = base_datamgr_val.get_data_loader_dct(
                 base_file, aug=False, filter_size=params.filter_size, subset=params.test_subset, channels=params.channels)
             val_loader, valset = base_datamgr_val.get_data_loader_dct(
@@ -211,17 +183,14 @@ def main():
             test_loader, testset = test_datamgr.get_data_loader_dct(
                 test_file, aug=False, filter_size=params.filter_size, subset=params.test_subset, channels=params.channels)
         else:
-            base_datamgr = SimpleDataManager(params.image_size, batch_size=params.calib_batch_size)
             base_datamgr_val = SimpleDataManager(params.image_size, batch_size=params.test_batch_size)
             test_datamgr = SimpleDataManager(params.image_size, batch_size=params.test_batch_size)
 
-            train_loader, trainset = base_datamgr.get_data_loader(base_file, aug=False)
             calib_loader, valset = base_datamgr_val.get_data_loader(base_file, aug=False, subset=params.test_subset)
             val_loader, valset = base_datamgr_val.get_data_loader(base_file, aug=False, subset=params.test_subset)
             test_loader, testset = test_datamgr.get_data_loader(test_file, aug=False, subset=params.test_subset)
 
     elif params.dataset == 'ImageNet':
-        trainset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'train'), transform=test_transform)
         calibset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'val'), transform=test_transform)
         valset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'val'), transform=test_transform)
         testset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'val'), transform=test_transform)
@@ -230,7 +199,6 @@ def main():
         _, test_idx = train_test_split(np.arange(num_test), test_size=params.test_subset, random_state=42)
         test_sampler = SubsetRandomSampler(test_idx)
 
-        train_loader = torch.utils.data.DataLoader(trainset, batch_size=params.calib_batch_size, shuffle=True)
         calib_loader = torch.utils.data.DataLoader(calibset, batch_size=params.calib_batch_size, shuffle=False)
         val_loader = torch.utils.data.DataLoader(valset, batch_size=params.test_batch_size, shuffle=False, sampler=test_sampler)
         test_loader = torch.utils.data.DataLoader(testset, batch_size=params.test_batch_size, shuffle=False, sampler=test_sampler)
@@ -280,16 +248,6 @@ def main():
     for data, _ in calib_loader:
         calib_data = data.to(device)
         break
-    print(f'Image pixel range [{torch.min(calib_data)}:{torch.max(calib_data)}]')
-
-    # Use only the model features for FHE model
-    #  BaselineTrain includes loss function, etc. which cannot be quantized
-    # model_feature = model.module.module.feature
-    # model_feature.unprune()
-    # model_feature = model.model
-    # print(model_feature)
-    # model_feature = model.module.feature
-    # print(model_feature)
 
     # Create FHE model
     print(f'rounding_threshold_bits: {params.rounding_threshold_bits}')
@@ -311,7 +269,7 @@ def main():
             model.module.feature,
             calib_data,
             rounding_threshold_bits=params.rounding_threshold_bits,
-            # rounding_threshold_bits={"n_bits": params.rounding_threshold_bits, "method": "approximate"},
+            # rounding_threshold_bits={"n_bits": params.rounding_threshold_bits, "method": "approximate"},  # makes things go brrr
             n_bits=params.n_bits,
             p_error=params.p_error,
             configuration=configuration,
@@ -350,7 +308,7 @@ def main():
     print(f"Keygen time: {time.time() - t:.2f}s")
     time.sleep(5)
 
-    # Test model in non-FHE mode
+    # Test model in (unencrypted) non-FHE mode
     print(f'\nRunning UNENCRYPTED model on a subset of {params.test_subset} images...')
     model.cuda()
     top1_val, top5_val, loss_val = test_unencrypted(model, criterion, val_loader)

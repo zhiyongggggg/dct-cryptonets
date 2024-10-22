@@ -16,11 +16,19 @@
 ```
 
 ## Summary
-**DCT-CryptoNets** is a novel Fully Homomorphic Encrypted (FHE) framework that leverages the Discrete Cosine Transform (DCT) to perform privacy-preserving neural network inference on encrypted images. By operating in the frequency domain, DCT-CryptoNets reduces the computational burden of homomorphic encryption, enabling significant latency improvements and efficient scaling to larger networks and images. This is achieved by strategically focusing on perceptually relevant low-frequency components while discarding noise-inducing high-frequency elements, thereby minimizing the need for computationally expensive non-linear activation and homomorphic bootstrapping operations. DCT-CryptoNets offers an avenue for deploying secure and efficient deep learning models in privacy-sensitive applications, particularly those involving large-scale image datasets.
+**DCT-CryptoNets** is a novel Fully Homomorphic Encrypted (FHE) framework that leverages the Discrete Cosine Transform 
+(DCT) to perform privacy-preserving neural network inference on encrypted images. By operating in the frequency domain, 
+DCT-CryptoNets reduces the computational burden of homomorphic encryption, enabling significant latency improvements and
+efficient scaling to larger networks and images. This is achieved by strategically focusing on perceptually relevant 
+low-frequency components while discarding noise-inducing high-frequency elements, thereby minimizing the need for 
+computationally expensive non-linear activation and homomorphic bootstrapping operations. DCT-CryptoNets offers an 
+avenue for deploying secure and efficient deep learning models in privacy-sensitive applications, particularly those 
+involving large-scale image datasets.
 
 
 ## Installation
-After cloning the repository, install environmental dependencies via Conda (Anaconda, Miniconda, Mamba etc.). The new conda environment will have the name `dct-cryptonets`.
+After cloning the repository, install environmental dependencies via Conda (Anaconda, Miniconda, Mamba etc.). The new 
+conda environment will have the name `dct-cryptonets`.
 ```bash
 conda env create -f env.yml
 ```
@@ -42,7 +50,9 @@ bash install_datasets.sh -a Y -b N -c N -d /path/to/download/dataset
 
 
 ## Run Experiments
-Both training (`run_train.sh`) and homomorphic evaluation (`run_homomorphic_eval.sh`) scripts have user arguments embedded. Please update these with your I/O information, model selection, and model hyperparameters. You can run these scripts in the background with `nohup` or `tmux` depending on your preference.
+Both training (`run_train.sh`) and homomorphic evaluation (`run_homomorphic_eval.sh`) scripts have user arguments 
+embedded. Please update these with your I/O information, model selection, and model hyperparameters. You can run these 
+scripts in the background with `nohup` or `tmux` depending on your preference.
 
 ### Training
 ```bash
@@ -67,7 +77,7 @@ nohup bash run_homomorphic_eval.sh > /path/to/log/output/ &
 |    Ran et al. (2023)     | CIFAR-10 |  3 x 32<sup>2</sup>  | ResNet-20  |        CKKS        |  90.2%   |   11,686    |                    ~                     |
 | Rovida & Leporati (2024) | CIFAR-10 |  3 x 32<sup>2</sup>  | ResNet-20  |        CKKS        |  91.7%   |   11,686    |                    ~                     |
 |  Benamira et al. (2023)  | CIFAR-10 |  3 x 32<sup>2</sup>  |   VGG-9    |        TFHE        |  74.0%   |   11,686    |                    48                    |
-|   Stoian et al. (2023)   | CIFAR-10 |  3 x 32<sup>2</sup>  |   VGG-9    |        TFHE        |  87.5%   |   11,686    |                  3,000*                  |
+|   Stoian et al. (2023)   | CIFAR-10 |  3 x 32<sup>2</sup>  |   VGG-9    |        TFHE        |  87.5%   |   11,686    |                  3,000                   |
 |    **DCT-CryptoNets**    | CIFAR-10 |  3 x 32<sup>2</sup>  | ResNet-20 |        TFHE        |  91.6%   |   11,686    |                  1,339                   |
 |    **DCT-CryptoNets**    | CIFAR-10 | 24 x 16<sup>2</sup> | ResNet-20 |        TFHE        |  90.5%   |   11,686    |                   565                    |
 |                          |          |                     |            |                    |          |             |                                          |
@@ -79,11 +89,33 @@ nohup bash run_homomorphic_eval.sh > /path/to/log/output/ &
 |   **DCT-CryptoNets**     | ImageNet  | 3 x 224<sup>2</sup> | ResNet-18 |        TFHE        |  91.6%   |   16,115    |                  16,115                  |
 |    **DCT-CryptoNets**    | ImageNet  | 64 x 56<sup>2</sup> | ResNet-18 |        TFHE        |  90.5%   |    8,562    |                  8,562                   |
 
-&ast; Updates to `Concrete-ML` API with _approximate rounding_ of model accumulators (added in v1.5.0) can improve latency further than currently reported. See [CIFAR10 Use Case](https://github.com/zama-ai/concrete-ml/tree/main/use_case_examples/cifar/cifar_brevitas_training) and [ResNet Use Case](https://github.com/zama-ai/concrete-ml/tree/main/use_case_examples/resnet) in the `Concrete-ML` repository.
+
+## Considerations
+`DCT-CryptoNets` was developed prior to `v1.6.0` of `Concrete-ML` which introduced a nice feature of _approximate 
+rounding_ of model accumulators. This can allow significant improvement in latency with a negligible drop in accuracy. 
+Therefore by replacing this simple line you could get latency even faster than what is reported in this paper! See 
+[CIFAR10 Use Case](https://github.com/zama-ai/concrete-ml/tree/main/use_case_examples/cifar/cifar_brevitas_training) and [ResNet Use Case](https://github.com/zama-ai/concrete-ml/tree/main/use_case_examples/resnet) in the `Concrete-ML` repository for further examples of 
+_approximate rounding_.
+```python
+from concrete.ml.torch.compile import compile_brevitas_qat_model
+
+compile_brevitas_qat_model(
+    ...
+    rounding_threshold_bits=params.rounding_threshold_bits,
+    # --- OR ---
+    rounding_threshold_bits={
+        "n_bits": params.rounding_threshold_bits, 
+        "method": "approximate",
+    },
+    ...
+)
+```
+
 
 ## Acknowledgement
 *This work was supported in part from the Purdue Center for Secure Microelectronics Ecosystem – CSME#210205.*
 
 Parts of this code were built upon [DCTNet](https://github.com/kaix90/DCTNet), [PT-MAP-sf](https://github.com/xiangyu8/PT-MAP-sf), and [Concrete-ML](https://github.com/zama-ai/concrete-ml).
 
-We would also like to thank the Zama Concrete-ML team and the community on [FHE Discord](https://fhe.org/community.html) for their support and interesting discussions!
+We would also like to thank the Zama Concrete-ML team and the community on [FHE Discord](https://fhe.org/community.html) for their support and 
+interesting discussions!

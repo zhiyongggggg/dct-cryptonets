@@ -10,20 +10,20 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 
 # ------ User Arguments ------
 gpu=0   # Multi-GPU training is not supported with QAT Brevitas due to quantized BatchNorm sync issues (causing validation loss stagnant)
-model=ResNet20qat
-dataset=cifar10
-dataset_path=/path/to/dataset
-checkpoint_dir=/path/to/save/checkpoint
+model=ResNet18qat
+dataset=ImageNet
+dataset_path=/home/datasets/imagenet/imagenet2012/
+checkpoint_dir=/home/arjunroy/Desktop/
 resume=
-num_classes=10
-epochs=20
-schedule_1=10
+num_classes=1000
+epochs=10
+schedule_1=5
 schedule_2=10
 schedule_3=10
 save_freq=5
-batch_size=32
-test_batch_size=64
-num_workers=8
+batch_size=256
+test_batch_size=512
+num_workers=4
 optimizer=adam
 lr=0.001
 weight_decay=1e-5
@@ -31,9 +31,9 @@ grad_clip_value=0.1
 dropout=0.2
 
 dct_status=Y
-image_size=16
-channels=48
-filter_size=4
+image_size=56
+channels=64
+filter_size=8
 dct_pattern=default
 bit_width=4
 # ----------------------------
@@ -61,7 +61,7 @@ if [ "${dct_status}" == Y ]; then
   echo "filter_size=${filter_size}"
   echo "dct_pattern=${dct_pattern}"
   echo -e "channels=${channels}\n"
-  CUDA_VISIBLE_DEVICES="${gpu}" python -u train_simple.py \
+  CUDA_VISIBLE_DEVICES="${gpu}" python -u train.py \
     --dataset "${dataset}" \
     --dataset_path "${dataset_path}" \
     --checkpoint_dir "${checkpoint_dir}" \
@@ -88,7 +88,7 @@ if [ "${dct_status}" == Y ]; then
     --train_aug
 else
   echo -e "\n"
-  CUDA_VISIBLE_DEVICES="${gpu}" python -u train_simple.py \
+  CUDA_VISIBLE_DEVICES="${gpu}" python -u train.py \
     --dataset "${dataset}" \
     --dataset_path "${dataset_path}" \
     --checkpoint_dir "${checkpoint_dir}" \

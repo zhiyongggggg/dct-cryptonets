@@ -5,30 +5,32 @@ import random
 import cv2
 import numpy as np
 import numbers
-import types
 import collections
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import minmax_scale
-import time
 from turbojpeg import TurboJPEG
-
-from jpeg2dct.numpy import load, loads
-
-from . import cvfunctional as F
-# from main import subset_channel_index
 from PIL import ImageEnhance
 from PIL import Image
 
+# Local modules
+from . import cvfunctional as F
+
+
 __all__ = ["ToTensorDCT",
            "NormalizeDCT", "Upscale", "Average", "AdjustDCT", "DCTCenterCrop", "SubsetDCT",
-           "SubsetDCT2", "Compose", "ToTensor", "ToCVImage", "Aggregate",
+           "Compose", "ToTensor", "ToCVImage", "Aggregate",
            "Normalize", "Resize", "CenterCrop", "Pad", "ImageJitter",
            "Lambda", "RandomApply", "RandomOrder", "RandomChoice", "RandomCrop",
-           "RandomHorizontalFlip", "RandomVerticalFlip", "RandomResizedCrop", "RandomResizedCropDCT",
+           "RandomHorizontalFlip", "RandomVerticalFlip", "RandomResizedCrop",
            "FiveCrop", "TenCrop", "LinearTransformation", "ColorJitter",
            "RandomRotation", "RandomAffine", "RandomAffine6", "RandomPerspective",
            "Grayscale", "RandomGrayscale", "ToYCrCb", "GetDCT", "UpScaleDCT",
            "RandomGaussianNoise", "RandomPoissonNoise", "RandomSPNoise", "Rescale"]
+
+transformtypedict = dict(
+    Brightness=ImageEnhance.Brightness,
+    Contrast=ImageEnhance.Contrast,
+    Sharpness=ImageEnhance.Sharpness,
+    Color=ImageEnhance.Color,
+)
 
 
 class Upscale(object):
@@ -39,10 +41,10 @@ class Upscale(object):
     def __call__(self, img):
         return img, F.upscale(img, self.upscale_factor, self.interpolation)
 
+
 class TransformUpscaledDCT(object):
     def __init__(self):
         self.jpeg_encoder = TurboJPEG()
-        # self.jpeg_encoder = TurboJPEG('/home/kai.x/work/local/lib/libturbojpeg.so')
 
     def __call__(self, img):
         y, cbcr = img[0], img[1]
@@ -50,17 +52,17 @@ class TransformUpscaledDCT(object):
         _, dct_cb, dct_cr = F.transform_dct(cbcr, self.jpeg_encoder)
         return dct_y, dct_cb, dct_cr
 
+
 class UpScaleDCT(object):
-    def __init__(self, size = 56):
+    def __init__(self, size=56):
         self.size = size
-    def __call__(self,img):
-        #print("shape before upscaling: ", img[0].shape,img[1].shape,img[2].shape)
-        y,cb,cr = img[0],img[1],img[2]
-        y = cv2.resize(y,(self.size,self.size))
-        cb = cv2.resize(cb,(self.size,self.size))
-        cr = cv2.resize(cr,(self.size,self.size))
-        #print("inside of UpscaleDCT: shape of img ",y.shape)
+    def __call__(self, img):
+        y,cb,cr = img[0], img[1], img[2]
+        y = cv2.resize(y, (self.size, self.size))
+        cb = cv2.resize(cb, (self.size, self.size))
+        cr = cv2.resize(cr, (self.size, self.size))
         return y,cb,cr
+
 
 class UpScaleCbCr(object):
     def __init__(self, upscale_factor=2, interpolation='BILINEAR'):
@@ -71,22 +73,17 @@ class UpScaleCbCr(object):
         y, cb, cr = img[0], img[1], img[2]
 
         dh, dw, _ = y.shape
-        # y  = F.upscale(y,  desize_size=(dh, dw), interpolation=self.interpolation)
         cb = F.upscale(cb, desize_size=(dh, dw), interpolation=self.interpolation)
         cr = F.upscale(cr, desize_size=(dh, dw), interpolation=self.interpolation)
         return y, cb, cr
 
 
 class GetDCT(object):
-    def __init__(self, dct_filter_size = 8):
+    def __init__(self, dct_filter_size=8):
         self.jpeg_encoder = TurboJPEG()
         self.dct_filter_size = dct_filter_size
 
     def __call__(self, img):
-        # img = np.array(img, dtype='uint8')
-        # if img.shape[0] == img.shape[1]:
-        #     img = img.transpose(2, 0, 1)
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         # print('Before GetDCT: the shape of img is ', img.shape)
         if self.dct_filter_size == 8:
             dct_y, dct_cb, dct_cr = F.transform_dct(img, self.jpeg_encoder)
@@ -116,6 +113,7 @@ class ToTensorDCT(object):
 
         return y, cb, cr
 
+
 class SubsetDCT(object):
     def __init__(self, channels=24, pattern='default', filter_size=8):
         if filter_size == 4:
@@ -143,33 +141,13 @@ class SubsetDCT(object):
         dct_y, dct_cb, dct_cr = dct_y[self.subset_y], dct_cb[self.subset_cb], dct_cr[self.subset_cr]
         return dct_y, dct_cb, dct_cr
 
-class SubsetDCT2(object):
-    def __init__(self, channels=20, pattern='default'):
-        if pattern == 'default':
-            self.subset_channel_index = subset_channel_index
-        if pattern == 'square':
-            self.subset_channel_index = subset_channel_index_square
-        elif pattern == 'learned':
-            self.subset_channel_index = subset_channel_index_learned
-        elif pattern == 'triangle':
-            self.subset_channel_index = subset_channel_index_triangle
-
-        if channels < 192:
-            self.subset_y =  self.subset_channel_index[channels][0]
-            self.subset_cb = self.subset_channel_index[channels][1]
-            self.subset_cr = self.subset_channel_index[channels][2]
-
-    def __call__(self, tensor):
-        dct_y, dct_cb, dct_cr = tensor[0], tensor[1], tensor[2]
-        dct_y, dct_cb, dct_cr = dct_y[:,:, self.subset_y], dct_cb[:, :, self.subset_cb], dct_cr[:, :, self.subset_cr]
-
-        return dct_y, dct_cb, dct_cr
 
 class Aggregate(object):
     def __call__(self, img):
         dct_y, dct_cb, dct_cr = img[0], img[1], img[2]
         dct_y = torch.cat((dct_y, dct_cb, dct_cr), dim=0)
         return dct_y
+
 
 class NormalizeDCT(object):
     """Normalize a tensor image with mean and standard deviation.
@@ -244,16 +222,17 @@ def opencv_loader(image, colorSpace='YCrCb'):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     return image
 
+
 class ToYCrCb(object):
     def __call__(self, img):
         img = opencv_loader(img, colorSpace='YCrCb')
 
         return img
 
+
 class AdjustDCT(object):
     def __init__(self):
-        self.jpeg_encoder = TurboJPEG('/usr/lib/libturbojpeg.so')
-        # self.jpeg_encoder = TurboJPEG('/home/kai.x/work/local/lib/libturbojpeg.so')
+        self.jpeg_encoder = TurboJPEG()
 
     def __call__(self, img):
         dct_y, dct_cb, dct_cr = img[0], img[1], img[2]
@@ -281,6 +260,7 @@ class DCTCenterCrop(object):
 
         return y, cb, cr
 
+
 class Average(object):
     def __call__(self, img):
         if isinstance(img, list):
@@ -292,9 +272,11 @@ class Average(object):
         else:
             return img.view(img.size(0), -1).mean(dim=1), None, None
 
+
 class AverageYUV(object):
     def __call__(self, img):
         return img.view(img.size(0), -1).mean(dim=1)
+
 
 class Compose(object):
     """Composes several transforms together.
@@ -335,10 +317,7 @@ class Lambda(object):
     """
 
     def __init__(self, lambd):
-        # assert isinstance(lambd, types.LambdaType)
         self.lambd = lambd
-        # if 'Windows' in platform.system():
-        #     raise RuntimeError("Can't pickle lambda funciton in windows system")
 
     def __call__(self, img):
         return self.lambd(img)
@@ -420,7 +399,6 @@ class Normalize(object):
     def __repr__(self):
         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
 
-transformtypedict=dict(Brightness=ImageEnhance.Brightness, Contrast=ImageEnhance.Contrast, Sharpness=ImageEnhance.Sharpness, Color=ImageEnhance.Color)
 
 class ImageJitter(object):
     def __init__(self, transformdict):
@@ -838,93 +816,6 @@ class RandomResizedCrop(object):
         format_string += ', interpolation={0})'.format(interpolate_str)
         return format_string
 
-class RandomResizedCropDCT(object):
-    """Crop the given CV Image to random size and aspect ratio.
-
-    A crop of random size (default: of 0.08 to 1.0) of the original size and a random
-    aspect ratio (default: of 3/4 to 4/3) of the original aspect ratio is made. This crop
-    is finally resized to given size.
-    This is popularly used to train the Inception networks.
-
-    Args:
-        size: expected output size of each edge
-        scale: range of size of the origin size cropped
-        ratio: range of aspect ratio of the origin aspect ratio cropped
-    """
-
-    def __init__(self, size, scale=(0.08, 1.0), ratio=(3. / 4., 4. / 3.), L=1, M=1, N=8,
-                 interpolation='BILINEAR', upscale_method='raw'):
-        self.size = (size, size)
-        self.scale = scale
-        self.ratio = ratio
-        self.interpolation = interpolation
-        self.upscale_method = upscale_method
-
-        self.A1 = block_composition(L, N)
-        self.A2 = block_composition(M, N)
-
-    @staticmethod
-    def get_params(img, scale, ratio):
-        """Get parameters for ``crop`` for a random sized crop.
-
-        Args:
-            img (CV Image): Image to be cropped.
-            scale (tuple): range of size of the origin size cropped
-            ratio (tuple): range of aspect ratio of the origin aspect ratio cropped
-
-        Returns:
-            tuple: params (i, j, h, w) to be passed to ``crop`` for a random
-                sized crop.
-        """
-        for attempt in range(10):
-            area = img.shape[0] * img.shape[1]
-            target_area = random.uniform(*scale) * area
-            aspect_ratio = random.uniform(*ratio)
-
-            w = int(round(math.sqrt(target_area * aspect_ratio)))
-            h = int(round(math.sqrt(target_area / aspect_ratio)))
-
-            if random.random() < 0.5:
-                w, h = h, w
-
-            if w <= img.shape[1] and h <= img.shape[0]:
-                i = random.randint(0, img.shape[0] - h)
-                j = random.randint(0, img.shape[1] - w)
-                return i, j, h, w
-
-        # Fallback
-        w = min(img.shape[0], img.shape[1])
-        i = (img.shape[0] - w) // 2
-        j = (img.shape[1] - w) // 2
-        return i, j, w, w
-
-    def __call__(self, img):
-        """
-        Args:
-            img (np.ndarray): Image to be cropped and resized.
-
-        Returns:
-            np.ndarray: Randomly cropped and resized image.
-        """
-        y, cb, cr = img[0], img[1], img[2]
-        i, j, h, w = self.get_params(y, self.scale, self.ratio)
-
-        if self.upscale_method == 'raw':
-            y  = F.resized_crop(y, i, j, h, w, self.size, self.interpolation)
-            cb = F.resized_crop(cb, i, j, h, w, self.size, self.interpolation)
-            cr = F.resized_crop(cr, i, j, h, w, self.size, self.interpolation)
-        else:
-            y  = F.resized_crop_dct(y, i, j, h, w, self.size, A1=self.A1, A2=self.A2)
-            cb = F.resized_crop_dct(cb, i, j, h, w, self.size, A1=self.A1, A2=self.A2)
-            cr = F.resized_crop_dct(cr, i, j, h, w, self.size, A1=self.A1, A2=self.A2)
-
-        return y, cb, cr
-
-    def __repr__(self):
-        format_string = self.__class__.__name__ + '(size={0}'.format(self.size)
-        format_string += ', scale={0}'.format(tuple(round(s, 4) for s in self.scale))
-        format_string += ', ratio={0}'.format(tuple(round(r, 4) for r in self.ratio))
-        return format_string
 
 class FiveCrop(object):
     """Crop the given CV Image into four corners and the central crop
@@ -1732,7 +1623,6 @@ subset_channel_index_filtersize_4 = {
 }
 
 subset_channel_index = {
-    # Mine
     6:
     [
         [0, 1,
@@ -1740,14 +1630,6 @@ subset_channel_index = {
         [0],
         [0]
     ],
-    # # There's
-    # 6:
-    # [
-    #     [0, 1,
-    #      8, 9],
-    #     [0],
-    #     [0]
-    # ],
     12:
     [
         [0, 1, 2,
@@ -1758,15 +1640,6 @@ subset_channel_index = {
         [0,
          8]
     ],
-    # 24:
-    # [
-    #     [0, 1, 2, 3,
-    #      8, 9, 10, 11,
-    #      16, 17, 18, 19,
-    #      24, 25, 26, 27],
-    #     [],
-    #     []
-    # ],
     24:
     [
         [0, 1, 2, 3, 4, 5,
@@ -1883,19 +1756,6 @@ subset_channel_index_square = {
         [0, 1],
         [0, 1]
     ],
-    # # Mine
-    # 24:
-    # [
-    #     [0, 1, 2, 3,
-    #      4, 5, 6, 7,
-    #      8, 9, 11, 12,
-    #      13, 17, 18, 24],
-    #     [0, 1,
-    #      2, 4],
-    #     [0, 1,
-    #      2, 4]
-    # ],
-    # There's
     24:
     [
         [0, 1, 2, 3,
@@ -1919,7 +1779,6 @@ subset_channel_index_square = {
         [0, 1, 2,
          8, 9]
     ],
-
    48:
     [
         [0, 1, 2, 3, 4, 5,
@@ -1935,7 +1794,6 @@ subset_channel_index_square = {
          8, 9, 10,
          16, 17]
     ],
-
     64:
         [
             [0, 1, 2,  3,  4,  5,  6,
@@ -2012,7 +1870,6 @@ subset_channel_index_triangle = {
          8, 9,
          16]
     ],
-
    48:
     [
         [0, 1, 2, 3, 4, 5, 6,
@@ -2031,7 +1888,6 @@ subset_channel_index_triangle = {
          16, 17,
          24]
     ],
-
     64:
         [
             [0, 1, 2, 3, 4, 5, 6, 7,

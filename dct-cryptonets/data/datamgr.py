@@ -1,19 +1,14 @@
-# This code is modified from https://github.com/facebookresearch/low-shot-shrink-hallucinate
-
 import torch
 import numpy as np
 import torchvision.transforms as transforms
-import data.cvtransforms as transforms_dct
-from .dataset import SimpleDataset, SetDataset, EpisodicBatchSampler
 from abc import abstractmethod
-from data import train_upscaled_static_mean, train_upscaled_static_std
-from data import train_upscaled_static_dct_direct_mean, train_upscaled_static_dct_direct_std
-from data import train_dct_subset_mean, train_dct_subset_std
-from data import train_y_mean_resized, train_y_std_resized, train_cb_mean_resized, train_cb_std_resized, train_cr_mean_resized, train_cr_std_resized
-from data import train_y_mean_upscaled, train_y_std_upscaled, train_cb_mean_upscaled, train_cb_std_upscaled, train_cr_mean_upscaled, train_cr_std_upscaled
-
 from torch.utils.data.sampler import SubsetRandomSampler
 from sklearn.model_selection import train_test_split
+
+# Local module
+import data.cvtransforms as transforms_dct
+from .dataset import SimpleDataset
+from data import train_upscaled_static_mean, train_upscaled_static_std
 
 
 class TransformLoader:

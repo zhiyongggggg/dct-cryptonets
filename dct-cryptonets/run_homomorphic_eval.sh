@@ -10,26 +10,26 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 
 # ------ User Arguments ------
 gpu=0
-model=ResNet20qat
-dataset=cifar10
-dataset_path=/path/to/dataset
-checkpoint_path=/path/to/checkpoint
-num_classes=10
+model=ResNet18qat
+dataset=ImageNet
+dataset_path=/home/datasets/imagenet/imagenet2012/
+checkpoint_path=/home/arjunroy/Repos/dct-cryptonets/checkpoints/ImageNet/ResNet18qat_dct/filter_8_pattern_default_input_64_56_56_bitwidth_4/best.tar
+num_classes=1000
 verbose=True
 
-fhe_mode=execute
+fhe_mode=simulate
 calib_batch_size=100
-test_batch_size=1  # Should be set to 1 if fhe_mode=execute
-test_subset=1  # Should be set to 1 if fhe_mode=execute
+test_batch_size=50  # Should be set to 1 if fhe_mode=execute
+test_subset=200  # Should be set to 1 if fhe_mode=execute
 rounding_threshold_bits=6
 n_bits=5
 p_error=0.01
 reliability_test=True
 
 dct_status=Y
-image_size=16
-channels=48
-filter_size=4
+image_size=56
+channels=64
+filter_size=8
 dct_pattern=default
 bit_width=4
 # ----------------------------

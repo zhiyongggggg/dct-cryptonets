@@ -1,21 +1,14 @@
 from __future__ import division
+
 import torch
-import math
-import random
-from PIL import Image
 import cv2
+import math
 import numpy as np
 import numbers
-import types
 import collections
-import warnings
 import matplotlib.pyplot as plt
-from torchvision.transforms import functional
-from numpy import r_
-from jpeg2dct.numpy import load, loads
-# import skimage
+from jpeg2dct.numpy import loads
 
-import math
 
 INTER_MODE = {'NEAREST': cv2.INTER_NEAREST, 'BILINEAR': cv2.INTER_LINEAR, 'BICUBIC': cv2.INTER_CUBIC}
 PAD_MOD = {'constant': cv2.BORDER_CONSTANT,
@@ -24,12 +17,14 @@ PAD_MOD = {'constant': cv2.BORDER_CONSTANT,
            'symmetric': cv2.BORDER_REFLECT
            }
 
+
 def transform_dct(img, encoder):
     if img.dtype != 'uint8':
         img = np.ascontiguousarray(img, dtype="uint8")
     img = encoder.encode(img, quality=100, jpeg_subsample=2)
     dct_y, dct_cb, dct_cr = loads(img)  # 28
     return dct_y, dct_cb, dct_cr
+
 
 def opencv_loader(image, colorSpace='YCrCb'):
     if colorSpace == "YCrCb":
@@ -65,14 +60,12 @@ def transform_dct_size(img, encoder,size):
     assert img.shape[0]>= size and img.shape[1]>=size, "image size is smaller than the dct filter !"
     if img.dtype != 'uint8':
         img = np.ascontiguousarray(img, dtype="uint8")
-    # to y cb cr, 4:2:0
-    # img = np.rollaxis(img, 0, 3)
+
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     img = opencv_loader(img, colorSpace='YCrCb')
     y,cb,cr = cv2.split(img)
     cb = cv2.resize(cb, (cb.shape[1]//2, cb.shape[0]//2))
     cr = cv2.resize(cr, (cr.shape[1]//2, cr.shape[0]//2))
-    # to dct_y, dct_cb, dct_cr
 
     dct_y = matrix2dct(y, size)
     dct_cb = matrix2dct(cb, size)
@@ -114,9 +107,7 @@ def imshow(inps, title=None):
         ax.axis('off')
         plt.imshow(inp)
         ax.set_title(name)
-        # plt.pause(0.001)
     plt.show()
-    # plt.waitforbuttonpress(-1)
 
 
 def _is_tensor_image(img):
@@ -141,8 +132,6 @@ def to_tensor(pic):
     if _is_numpy_image(pic):
         if len(pic.shape) == 2:
             pic = cv2.cvtColor(pic, cv2.COLOR_GRAY2RGB)
-            # pic = cv2.cvtColor(pic)
-            # pic = np.expand_dims(pic, axis=0)
         if pic.shape[0] > pic.shape[-1]:
             img = torch.from_numpy(pic.transpose((2, 0, 1)))
         else:
@@ -247,6 +236,7 @@ def resize(img, size, interpolation='BILINEAR'):
     else:
         oh, ow = size
         return cv2.resize(img, dsize=(int(ow), int(oh)), interpolation=INTER_MODE[interpolation])
+
 
 def to_rgb_bgr(pic):
     """Converts a color image stored in BGR sequence to RGB (BGR to RGB)
@@ -395,9 +385,7 @@ def resized_crop(img, i, j, h, w, size, interpolation='BILINEAR'):
     """
     assert _is_numpy_image(img), 'img should be CV Image'
     img = crop(img, i, j, h, w)
-    # cv2.imwrite('/mnt/ssd/kai.x/work/code/iftc/datasets/cvtransforms/test/crop.jpg', img)
     img = resize(img, size, interpolation)
-    # cv2.imwrite('/mnt/ssd/kai.x/work/code/iftc/datasets/cvtransforms/test/resize.jpg', img)
     return img
 
 
@@ -434,7 +422,7 @@ def vflip(img):
 def five_crop(img, size):
     """Crop the given CV Image into four corners and the central crop.
 
-    .. Note::
+    Note::
         This transform returns a tuple of images and there may be a
         mismatch in the number of inputs and targets your ``Dataset`` returns.
 
@@ -468,7 +456,7 @@ def ten_crop(img, size, vertical_flip=False):
     """Crop the given CV Image into four corners and the central crop plus the
        flipped version of these (horizontal flipping is used by default).
 
-    .. Note::
+    Note::
         This transform returns a tuple of images and there may be a
         mismatch in the number of inputs and targets your ``Dataset`` returns.
 
@@ -903,70 +891,3 @@ def salt_and_pepper(img, prob=0.01):
     noisy[rnd < prob/2] = 0.0
     noisy[rnd > 1 - prob/2] = 255.0
     return noisy.astype(imgtype)
-
-
-def cv_transform(img):
-    # img = resize(img, size=(100, 300))
-    # img = to_tensor(img)
-    # img = normalize(img, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    # img = pad(img, padding=(10, 10, 20, 20), fill=(255, 255, 255), padding_mode='constant')
-    # img = pad(img, padding=(100, 100, 100, 100), fill=5, padding_mode='symmetric')
-    # img = crop(img, -40, -20, 1000, 1000)
-    # img = center_crop(img, (310, 300))
-    # img = resized_crop(img, -10.3, -20, 330, 220, (500, 500))
-    # img = hflip(img)
-    # img = vflip(img)
-    # tl, tr, bl, br, center = five_crop(img, 100)
-    # img = adjust_brightness(img, 2.1)
-    # img = adjust_contrast(img, 1.5)
-    # img = adjust_saturation(img, 2.3)
-    # img = adjust_hue(img, 0.5)
-    # img = adjust_gamma(img, gamma=3, gain=0.1)
-    # img = rotate(img, 10, resample='BILINEAR', expand=True, center=None)
-    # img = to_grayscale(img, 3)
-    # img = affine(img, 10, (0, 0), 1, 0, resample='BICUBIC', fillcolor=(255,255,0))
-    # img = gaussion_noise(img)
-    # img = poisson_noise(img)
-    img = salt_and_pepper(img)
-    return to_tensor(img)
-
-
-def pil_transform(img):
-    # img = functional.resize(img, size=(100, 300))
-    # img = functional.to_tensor(img)
-    # img = functional.normalize(img, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    # img = functional.pad(img, padding=(10, 10, 20, 20), fill=(255, 255, 255), padding_mode='constant')
-    # img = functional.pad(img, padding=(100, 100, 100, 100), padding_mode='symmetric')
-    # img = functional.crop(img, -40, -20, 1000, 1000)
-    # img = functional.center_crop(img, (310, 300))
-    # img = functional.resized_crop(img, -10.3, -20, 330, 220, (500, 500))
-    # img = functional.hflip(img)
-    # img = functional.vflip(img)
-    # tl, tr, bl, br, center = functional.five_crop(img, 100)
-    # img = functional.adjust_brightness(img, 2.1)
-    # img = functional.adjust_contrast(img, 1.5)
-    # img = functional.adjust_saturation(img, 2.3)
-    # img = functional.adjust_hue(img, 0.5)
-    # img = functional.adjust_gamma(img, gamma=3, gain=0.1)
-    # img = functional.rotate(img, 10, resample=PIL.Image.BILINEAR, expand=True, center=None)
-    # img = functional.to_grayscale(img, 3)
-    # img = functional.affine(img, 10, (0, 0), 1, 0, resample=PIL.Image.BICUBIC, fillcolor=(255,255,0))
-
-    return functional.to_tensor(img)
-
-
-if __name__ == '__main__':
-    image_path = '../../cat.jpg'
-
-    cvimage = cv2.imread(image_path, cv2.IMREAD_COLOR)
-    cvimage = cv2.cvtColor(cvimage, cv2.COLOR_BGR2RGB)
-    cvimage = cv_transform(cvimage)
-
-    pilimage = Image.open(image_path).convert('RGB')
-    pilimage = pil_transform(pilimage)
-
-    sub = abs(cvimage - pilimage)
-
-    imshow((cvimage, pilimage, sub), ('CV', 'PIL', 'sub'))
-    # imshow((cvimage, pilimage), ('CV', 'PIL'))
-    # imshow([pilimage], ('PIL'))

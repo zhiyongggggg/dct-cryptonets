@@ -1,17 +1,12 @@
-# This code is modified from https://github.com/facebookresearch/low-shot-shrink-hallucinate
-
 import torch
 import torch.nn as nn
 import math
-from torch.nn.utils import prune
 import brevitas.nn as qnn
 from brevitas.quant import Int8ActPerTensorFloat, Int8WeightPerTensorFloat
 
-from .utils import all_network_perturbations
-
 
 def init_layer(L):
-    # Initialization using fan-in
+    """ Initialization using fan-in """
     if isinstance(L, nn.Conv2d):
         n = L.kernel_size[0] * L.kernel_size[1] * L.out_channels
         L.weight.data.normal_(0, math.sqrt(2.0 / float(n)))
@@ -20,7 +15,6 @@ def init_layer(L):
         L.bias.data.fill_(0)
 
 
-# Simple ResNet Block
 class SimpleBlock(nn.Module):
     """ Simple ResNet Block """
     def __init__(self, indim, outdim, half_res):
@@ -77,7 +71,6 @@ class SimpleQBlock(nn.Module):
         self.relu1 = qnn.QuantReLU(bit_width=qidentity_args["bit_width"])
         self.relu2 = qnn.QuantReLU(bit_width=qidentity_args["bit_width"])
         self.quant_out = qnn.QuantIdentity(return_quant_tensor=False, scaling_init=1.0, **qidentity_args)
-        # self.quant_final = qnn.QuantIdentity(return_quant_tensor=False, scaling_init=1.0, **qidentity_args)
 
         self.parametrized_layers = [self.C1, self.C2, self.BN1, self.BN2]
 
@@ -105,57 +98,9 @@ class SimpleQBlock(nn.Module):
         out = self.C2(out)
         out = self.BN2(out)
         out = self.quant_out(out)
-        # short_out = self.quant_out(x) if self.shortcut_type == 'identity' else self.quant_out(self.BNshortcut(self.shortcut(x)))
         short_out = x if self.shortcut_type == 'identity' else self.BNquant_out(self.BNshortcut(self.shortcut(x)))
         out = torch.add(out, short_out)
         out = self.relu2(out)
-        # out = self.quant_final(out)
-        return out
-
-
-class BottleneckBlock(nn.Module):
-    """ Simple Bolttleneck Block """
-    def __init__(self, indim, outdim, half_res):
-        super(BottleneckBlock, self).__init__()
-        bottleneckdim = int(outdim / 4)
-        self.indim = indim
-        self.outdim = outdim
-        self.C1 = nn.Conv2d(indim, bottleneckdim, kernel_size=1, bias=False)
-        self.BN1 = nn.BatchNorm2d(bottleneckdim)
-        self.C2 = nn.Conv2d(bottleneckdim, bottleneckdim, kernel_size=3, stride=2 if half_res else 1, padding=1)
-        self.BN2 = nn.BatchNorm2d(bottleneckdim)
-        self.C3 = nn.Conv2d(bottleneckdim, outdim, kernel_size=1, bias=False)
-        self.BN3 = nn.BatchNorm2d(outdim)
-
-        self.relu = nn.ReLU()
-        self.parametrized_layers = [self.C1, self.BN1, self.C2, self.BN2, self.C3, self.BN3]
-        self.half_res = half_res
-
-        # if the input number of channels is not equal to the output, then need a 1x1 convolution
-        if indim != outdim:
-            self.shortcut = nn.Conv2d(indim, outdim, 1, stride=2 if half_res else 1, bias=False)
-            self.parametrized_layers.append(self.shortcut)
-            self.shortcut_type = '1x1'
-        else:
-            self.shortcut_type = 'identity'
-
-        for layer in self.parametrized_layers:
-            init_layer(layer)
-
-    def forward(self, x):
-
-        short_out = x if self.shortcut_type == 'identity' else self.shortcut(x)
-        out = self.C1(x)
-        out = self.BN1(out)
-        out = self.relu(out)
-        out = self.C2(out)
-        out = self.BN2(out)
-        out = self.relu(out)
-        out = self.C3(out)
-        out = self.BN3(out)
-        out = out + short_out
-
-        out = self.relu(out)
         return out
 
 
@@ -347,11 +292,12 @@ def ResNet20(flatten=True, in_channels=3, img_size=224):
     model = ResNetDCT(
         SimpleBlock,
         [3, 3, 3],
-        [48, 56, 64],
+        [48, 56, 64],  # DCT-CrypoNets ResNet20 channel dimensions
+        # [16, 32, 64],           # Traditional ResNet20 channel dimensions
         flatten,
         in_channels=in_channels,
         img_size=img_size,
-        skip_single_downsample=True,
+        skip_single_downsample=True,  # Set to False if using Traditional ResNet20
     )
     return model
 
@@ -360,12 +306,13 @@ def ResNet20QAT(flatten=True, bit_width=4, in_channels=3, img_size=224):
     model = ResNetQDCT(
         SimpleQBlock,
         [3, 3, 3],
-        [48, 56, 64],
+        [48, 56, 64],  # DCT-CrypoNets ResNet20 channel dimensions
+        # [16, 32, 64],           # Traditional ResNet20 channel dimensions
         flatten,
         bit_width=bit_width,
         in_channels=in_channels,
         img_size=img_size,
-        skip_single_downsample=True,
+        skip_single_downsample=True,  # Set to False if using Traditional ResNet20
     )
     return model
 
@@ -393,3 +340,252 @@ def ResNet18QAT(flatten=True, bit_width=4, in_channels=3, img_size=224):
         bit_width=bit_width
     )
     return model
+
+
+# Network pertubations based on model architecture
+# Key is "second (block) channel dimension" _ "input channel dimension" _ "input spatial dimension"
+all_network_perturbations = {
+    # Traditional ResNet20 models
+    '16_3_32': {
+        'conv1_kernel': 3,
+        'conv1_stride': 1,
+        'conv1_padding': 1,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 7,
+    },
+    '16_24_8': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': True,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 2,
+    },
+    '16_24_16': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': True,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 7,
+    },
+    '16_48_8': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': True,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 2,
+    },
+    '16_48_16': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': True,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 7,
+    },
+    # DCT-CryptoNets ResNet20 models
+    '48_3_32': {
+        'conv1_kernel': 3,
+        'conv1_stride': 1,
+        'conv1_padding': 1,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 7,
+    },
+    '48_24_8': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': True,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 3,
+    },
+    '48_24_16': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': True,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 7,
+    },
+    '48_48_8': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': True,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 3,
+    },
+    '48_48_16': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': True,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 7,
+    },
+    '64_48_16': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': True,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 3,
+    },
+    # RGB-Based ResNet18
+    '64_3_32': {
+        'conv1_kernel': 3,
+        'conv1_stride': 1,
+        'conv1_padding': 1,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 3,
+    },
+    '64_3_128': {
+        'conv1_kernel': 7,
+        'conv1_stride': 2,
+        'conv1_padding': 3,
+        'relu1': True,
+        'pool1_kernel': 3,
+        'pool1_stride': 2,
+        'avgpool_kernel': 3,
+    },
+    '64_3_224': {
+        'conv1_kernel': 7,
+        'conv1_stride': 2,
+        'conv1_padding': 3,
+        'relu1': True,
+        'pool1_kernel': 3,
+        'pool1_stride': 2,
+        'avgpool_kernel': 7,
+    },
+    '64_3_448': {
+        'conv1_kernel': 7,
+        'conv1_stride': 2,
+        'conv1_padding': 3,
+        'relu1': True,
+        'pool1_kernel': 3,
+        'pool1_stride': 2,
+        'avgpool_kernel': 14,
+    },
+    '64_3_1024': {
+        'conv1_kernel': 7,
+        'conv1_stride': 2,
+        'conv1_padding': 3,
+        'pool1_kernel': 7,
+        'pool1_stride': 4,
+        'avgpool_kernel': 11,
+    },
+    # DCT-Based ResNet18
+    '64_6_56': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 5,
+    },
+    '64_12_56': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 5,
+    },
+    '64_24_56': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 5,
+    },
+    '64_48_56': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 5,
+    },
+    '64_64_56': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 5,
+    },
+    '64_192_56': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 5,
+    },
+    '64_6_112': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 14,
+    },
+    '64_24_112': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 14,
+    },
+    '64_48_112': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 14,
+    },
+    '64_64_112': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 14,
+    },
+    '64_192_112': {
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 14,
+    },
+}

@@ -1,5 +1,5 @@
 """
-Training
+Training DCT-CryptoNets
 
 author: Arjun Roy <roy208@purdue.edu>
 """
@@ -30,13 +30,13 @@ print(f'Using GPU: {use_gpu}\n')
 
 def train(params, model, optimizer, criterion, train_loader, val_loader, start_epoch, stop_epoch, early_stopping):
 
-    # grab highest val accuracy if resuming training
+    # Grab highest val accuracy if resuming training
     if model.module.best_prec1_val is None:
         best_val_acc = 0
     else:
         best_val_acc = model.module.best_prec1_val
 
-    # train epochs
+    # Train epochs
     for epoch in range(start_epoch, stop_epoch):
         model.train()
         t = time.time()
@@ -49,7 +49,7 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
         top1_val = AverageMeter()
         top5_val = AverageMeter()
 
-        adjust_learning_rate(params, optimizer, epoch)
+        params = adjust_learning_rate(params, optimizer, epoch)
         print(f'\nEpoch: [{epoch + 1} | {stop_epoch}] LR: {get_lr(optimizer)}')
 
         for batch_idx, (data, target) in enumerate(train_loader):
@@ -59,13 +59,13 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
             f, output = model.forward(data)
             loss = criterion(output, target)
 
-            # measure accuracy and record loss
+            # Measure accuracy and record loss
             prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
             train_loss.update(loss.data.item(), data.size(0))
             top1.update(prec1.item(), data.size(0))
             top5.update(prec5.item(), data.size(0))
 
-            # compute gradient and perform optimizer step
+            # Compute gradient and perform optimizer step
             optimizer.zero_grad()
             loss.backward()
             if params.grad_clip_value is not None:
@@ -74,7 +74,7 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
                 nn.utils.clip_grad_norm_(model.parameters(), max_norm=params.grad_clip_norm, norm_type=2)
             optimizer.step()
 
-            # display progress
+            # Display progress
             if batch_idx % (len(train_loader)//10) == 0:
                 print(f'[{batch_idx}/{len(train_loader)}] Avg. Train Loss: {train_loss.avg:.3f} | '
                       f'Top-1 Acc: {top1.avg:.3f}% | Top-5 Acc: {top5.avg:.3f}%')
@@ -92,7 +92,7 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
         print(f'Time for training epoch {epoch}: {training_time/60:.2f} minutes')
         t = time.time()
 
-        # validate every epoch
+        # Validate every epoch
         model.eval()
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(val_loader):
@@ -102,7 +102,7 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
                 f, output = model.forward(data)
                 loss = criterion(output, target)
 
-                # measure accuracy and record loss
+                # Measure accuracy and record loss
                 prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
                 val_loss.update(loss.data.item(), data.size(0))
                 top1_val.update(prec1.item(), data.size(0))
@@ -114,7 +114,7 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
         validation_time = time.time() - t
         print(f'Time for validation epoch {epoch}: {validation_time/60:.2f} minutes')
 
-        # save best model
+        # Save best model
         if top1_val.avg > best_val_acc:
             best_val_acc = top1_val.avg
             torch.save({
@@ -125,12 +125,12 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
                 'optimizer': optimizer.state_dict(),
             }, os.path.join(params.checkpoint_dir, 'best.tar'))
 
-        # early stopping
+        # Early stopping
         if early_stopping(val_loss.avg):
             print(f'Early stopping at epoch: {epoch}')
             break
 
-        # reset validation records each epoch
+        # Reset validation records each epoch
         val_loss.reset()
         top1_val.reset()
         top5_val.reset()
@@ -139,6 +139,7 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
 
 
 def test(model, criterion, val_loader, test_loader):
+
     model.eval()
     with torch.no_grad():
         val_loss = 0

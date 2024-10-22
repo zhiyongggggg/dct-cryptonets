@@ -1,3 +1,4 @@
+# This data/ module is modified from https://github.com/xiangyu8/PT-MAP-sf and https://github.com/kaix90/DCTNet
 train_y_mean = [-8.7809e+01,  1.9674e-02,  7.7192e-03,  1.3726e-02,  2.4590e-02,
                 9.0251e-03,  1.5247e-02,  1.9412e-02,  4.4391e-01, -1.5085e-02,
                 -5.7332e-03, -7.7743e-03, -1.7844e-03, -2.0205e-03, -1.0428e-03,

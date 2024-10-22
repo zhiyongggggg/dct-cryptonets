@@ -116,6 +116,7 @@ def adjust_learning_rate(params, optimizer, epoch):
         params.lr *= params.gamma
         for param_group in optimizer.param_groups:
             param_group['lr'] = params.lr
+    return params
 
 
 def get_lr(optimizer):
@@ -163,4 +164,3 @@ def pred_classes(params, model, test_data):
     sn.heatmap(confusion_df, annot=True)
     plt.savefig(f'{params.checkpoint_dir}/heatmap.png', dpi=400)
     return
-
