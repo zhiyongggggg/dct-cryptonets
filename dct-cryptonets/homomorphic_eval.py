@@ -223,6 +223,8 @@ def main():
     )
     print(f'Number Parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}')
     print('\n============Model Summary============')
+    # Ignore parameter count calculated from torchinfo.summary as it doesn't play well with Brevitas QAT
+    # Used solely for understanding network topology and tensor dimension changes
     if params.dct_status:
         summary(
             model.module.feature.to('cpu'),
@@ -238,7 +240,7 @@ def main():
     criterion = nn.CrossEntropyLoss()
 
     # Load checkpoint
-    print('Loading checkpoint...')
+    print('\nLoading checkpoint...')
     checkpoint = torch.load(params.checkpoint_path, map_location=device)
     model.load_state_dict(checkpoint['state'])
     model.module.best_prec1_val = checkpoint["prec1"]
@@ -250,10 +252,7 @@ def main():
         break
 
     # Create FHE model
-    print(f'rounding_threshold_bits: {params.rounding_threshold_bits}')
-    print(f'n_bits: {params.n_bits}')
-    print(f'p_error: {params.p_error}')
-    print(f'Compiling FHE Model (this can take up to half an hour for larger networks)...')
+    print(f'\nCompiling FHE Model (this can take up to 10 minutes for larger networks)...')
     model.to(device)
     configuration = Configuration(
         # To enable displaying progressbar

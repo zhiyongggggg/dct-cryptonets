@@ -333,6 +333,8 @@ def main():
     )
     print(f'Number Parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}')
     print('\n============Model Summary============')
+    # Ignore parameter count calculated from torchinfo.summary as it doesn't play well with Brevitas QAT
+    # Used solely for understanding network topology and tensor dimension changes
     if params.dct_status:
         summary(
             model.module.feature.to('cpu'),
@@ -374,7 +376,7 @@ def main():
 
     if params.resume:
         # Load checkpoint.
-        print('Resuming from checkpoint...')
+        print('\nResuming from checkpoint...')
         checkpoint = torch.load(params.resume)
         start_epoch = checkpoint['epoch']
         model.load_state_dict(checkpoint['state'])
