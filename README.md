@@ -90,10 +90,10 @@ nohup bash run_homomorphic_eval.sh > /path/to/log/output/ &
 |    **DCT-CryptoNets**    | **ImageNet** | **64 x 56<sup>2</sup>** | **ResNet-18** |        **TFHE**        |   **90.5%**   |  **8,562**   |                **8,562**        |
 
 
-## Considerations
+## Library Considerations
 `DCT-CryptoNets` was developed prior to `v1.6.0` of `Concrete-ML` which introduced a nice feature of _approximate 
 rounding_ of model accumulators. This can improve latency with trade-off's in accuracy depending on your use case and
-achieve even faster latency than what is reported in this paper! By simply replacing the line below you can implement 
+could potentially achieve even faster latency than what is reported in this paper! By simply replacing the line below you can implement 
 _approximate rounding_. See [*CIFAR10 Use Case](https://github.com/zama-ai/concrete-ml/tree/main/use_case_examples/cifar/cifar_brevitas_training) and [ResNet Use Case](https://github.com/zama-ai/concrete-ml/tree/main/use_case_examples/resnet) in the `Concrete-ML` repository for 
 further examples of _approximate rounding_.
 ```python
