@@ -16,13 +16,13 @@ dataset=ImageNet
 num_classes=1000
 dataset_path=/home/datasets/imagenet/imagenet2012/
 checkpoint_path=/home/arjunroy/Repos/dct-cryptonets/checkpoints/ImageNet/ResNet18qat_dct/filter_8_pattern_default_input_64_56_56_bitwidth_4/best.tar
-bit_width=4                 # QAT trained bit-width
+bit_width=4                 # QAT trained bit-width. Set to 4 if cifar10, mini-ImageNet, Imagenette; otherwise 5 if ImageNet
 
 # Homomorphic encryption parameters (Dataset batch/subset sizes are dependent on this)
-fhe_mode=execute
+fhe_mode=simulate
 calib_batch_size=100
-test_batch_size=1           # Set to 1 if fhe_mode=execute
-test_subset=1               # Set to 1 if fhe_mode=execute; ~200 if fhe_mode=simulate and running reliability_test
+test_batch_size=50          # Set to 1 if fhe_mode=execute
+test_subset=200             # Set to 1 if fhe_mode=execute; ~200 if fhe_mode=simulate and running reliability_test
 rounding_threshold_bits=7   # Set to 6 if running cifar10, mini-ImageNet, Imagenette; otherwise 7 if ImageNet
 n_bits=5
 p_error=0.01

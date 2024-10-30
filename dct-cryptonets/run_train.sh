@@ -32,7 +32,7 @@ schedule_1=5
 schedule_2=10
 schedule_3=10
 checkpoint_save_freq=5
-bit_width=4             # QAT trained bit-width
+bit_width=4             # QAT trained bit-width. Set to 4 if cifar10, mini-ImageNet, Imagenette; otherwise 5 if ImageNet
 
 # DCT parameters
 dct_status=Y            # Set to N if running RGB-based network

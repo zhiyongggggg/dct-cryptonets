@@ -1,7 +1,7 @@
 # DCT-CryptoNets: Scaling Private Inference in the Frequency Domain
 
 <p align="center">
-  <img src="visuals/dct-cryptonets.svg" alt="DCT-CryptoNets" width="500"/>
+  <img src="visuals/dct-cryptonets.svg" alt="DCT-CryptoNets" width="600"/>
   <p align="center">
     This repository contains code from <i><b>DCT-CryptoNets</b></i>. The paper can be accessed for free on <a href="https://www.arxiv.org/abs/2408.15231"><strong>Arxiv »</strong></a>
 </p>
@@ -23,7 +23,7 @@ efficient scaling to larger networks and images. This is achieved by strategical
 low-frequency components while discarding noise-inducing high-frequency elements, thereby minimizing the need for 
 computationally expensive non-linear activation and homomorphic bootstrapping operations. DCT-CryptoNets offers an 
 avenue for deploying secure and efficient deep learning models in privacy-sensitive applications, particularly those 
-involving large-scale image datasets.
+involving large-scale images.
 
 
 ## Installation
@@ -93,7 +93,7 @@ nohup bash run_homomorphic_eval.sh > /path/to/log/output/ &
 ## Considerations
 `DCT-CryptoNets` was developed prior to `v1.6.0` of `Concrete-ML` which introduced a nice feature of _approximate 
 rounding_ of model accumulators. This can improve latency with trade-off's in accuracy depending on your use case and
-achieve even faster latency than what is reported in this paper! By replacing the simple line below you can implement 
+achieve even faster latency than what is reported in this paper! By simply replacing the line below you can implement 
 _approximate rounding_. See [*CIFAR10 Use Case](https://github.com/zama-ai/concrete-ml/tree/main/use_case_examples/cifar/cifar_brevitas_training) and [ResNet Use Case](https://github.com/zama-ai/concrete-ml/tree/main/use_case_examples/resnet) in the `Concrete-ML` repository for 
 further examples of _approximate rounding_.
 ```python
