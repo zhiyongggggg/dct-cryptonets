@@ -105,5 +105,5 @@ else
     --n_bits "${n_bits}" \
     --p_error "${p_error}" \
     --reliability_test "${reliability_test}" \
-    --verbose "#${verbose}"
+    --verbose "${verbose}"
 fi
