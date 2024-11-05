@@ -66,7 +66,7 @@ nohup bash run_homomorphic_eval.sh > /path/to/log/output/ &
 
 ## Comparative Benchmarking
 ### Fully Homomorphic Encrypted Neural Networks (FHENN's) for Image Classification
-|          Method          | Dataset  |  Input Dimensions   |   Model    | Homomorphic Scheme | Accuracy  | Latency (s)  | Normalized Latency (s)<br/> (96-threads) |
+|          Method          | Dataset  |  Input Dim.   |   Model    | Homomorphic Scheme | Accuracy  | Latency (s)  | Normalized Latency (s) <br/> (96-core) |
 |:------------------------:|:--------:|:-------------------:|:----------:|:------------------:|:---------:|:------------:|:-------------------------------:|
 | Hesamifard et al. (2017) | CIFAR-10 |  3 x 32<sup>2</sup>  | Custom CNN |        BGV         |   91.4%   |    11,686    |                    ~            |
 |    Chou et al. (2018)    | CIFAR-10 |  3 x 32<sup>2</sup>  | Custom CNN |       FV-RNS       |   75.9%   |    3,240     |                    ~            |
@@ -81,13 +81,13 @@ nohup bash run_homomorphic_eval.sh > /path/to/log/output/ &
 |    **DCT-CryptoNets**    | **CIFAR-10** |  **3 x 32<sup>2</sup>**  | **ResNet-20** |      **TFHE**      | **91.6%** |  **1,339**   |                **1,339**        |
 |    **DCT-CryptoNets**    | **CIFAR-10** | **24 x 16<sup>2</sup>** | **ResNet-20** |      **TFHE**      | **90.5%** |   **565**    |                 **565**         |
 |                          |          |                     |            |                    |           |              |                                 |
-| SHE (Lou & Jiang, 2019)  | CIFAR-10 | 3 x 32<sup>2</sup>  | ResNet-18  |        TFHE        |   94.6%   |    12,041    |                  2,509          |
+| SHE (Lou & Jiang, 2019)  | CIFAR-10 | 3 x 32<sup>2</sup>  | ResNet-18  |        TFHE        |   94.6%   |    12,041    |                  2,509         |
 |    **DCT-CryptoNets**    | **CIFAR-10** |  **3 x 32<sup>2</sup>**  | **ResNet-18** |      **TFHE**      | **92.3%** |  **1,746**   |                **1,746**        |
-|    **DCT-CryptoNets**    | **CIFAR-10** |  **3 x 32<sup>2</sup>**  | **ResNet-18** |      **TFHE**     | **91.2%** |  **1,004**   |                **1,004**        |
+|    **DCT-CryptoNets**    | **CIFAR-10** |  **24 x 16<sup>2</sup>**  | **ResNet-18** |      **TFHE**     | **91.2%** |  **1,004**   |                **1,004**        |
 |                          |          |                     |            |                    |           |              |                                 |
-| SHE (Lou & Jiang, 2019)  | ImageNet | 3 x 224<sup>2</sup> | ResNet-18 |        TFHE        |   92.5%   |   216,000    |                  45,000         |
-|   **DCT-CryptoNets**     | **ImageNet** | **3 x 224<sup>2</sup>** | **ResNet-18** |        **TFHE**        | **91.6%** |  **16,115**  |                **16,115**       |
-|    **DCT-CryptoNets**    | **ImageNet** | **64 x 56<sup>2</sup>** | **ResNet-18** |        **TFHE**        |   **90.5%**   |  **8,562**   |                **8,562**        |
+| SHE (Lou & Jiang, 2019)  | ImageNet | 3 x 224<sup>2</sup> | ResNet-18 |        TFHE        |   66.8%   |   216,000    |                  45,000 <br/> (12 h 30 m)         |
+|   **DCT-CryptoNets**     | **ImageNet** | **3 x 224<sup>2</sup>** | **ResNet-18** |        **TFHE**        | **66.1%** |  **16,115**  |                **16,115** <br/> (4 h 29 m)       |
+|    **DCT-CryptoNets**    | **ImageNet** | **64 x 56<sup>2</sup>** | **ResNet-18** |        **TFHE**        |   **66.3%**   |  **8,562**   |                **8,562** <br/> (2 h 23 m)       |
 
 
 ## Library Considerations
