@@ -3,7 +3,7 @@
 <p align="center">
   <img src="visuals/dct-cryptonets.svg" alt="DCT-CryptoNets" width="600"/>
   <p align="center">
-    This repository contains code from <i><b>DCT-CryptoNets</b></i>. The paper can be accessed for free on <a href="https://www.arxiv.org/abs/2408.15231"><strong>Arxiv »</strong></a>
+    This repository contains code from <i><b>DCT-CryptoNets</b></i>. The paper can be accessed for free on <a href="https://openreview.net/forum?id=lPJUQsSIxm&nesting=2&sort=date-desc"> <strong>OpenReview »</strong></a> or <a href="https://www.arxiv.org/abs/2408.15231"><strong>Arxiv »</strong></a>
 </p>
 
 ```bibtex
