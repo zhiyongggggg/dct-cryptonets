@@ -7,11 +7,13 @@
 </p>
 
 ```bibtex
-@article{roy2024arxiv,
-  title   = {DCT-CryptoNets: Scaling Private Inference in the Frequency Domain}, 
-  author  = {Arjun Roy and Kaushik Roy},
-  journal = {arXiv},
-  year    = {2024}
+@inproceedings{
+  roy2025dctcryptonets,
+  title={{DCT}-CryptoNets: Scaling Private Inference in the Frequency Domain},
+  author={Arjun Roy and Kaushik Roy},
+  booktitle={The Thirteenth International Conference on Learning Representations},
+  year={2025},
+  url={https://openreview.net/forum?id=lPJUQsSIxm}
 }
 ```
 
@@ -113,9 +115,8 @@ compile_brevitas_qat_model(
 
 
 ## Acknowledgement
-*This work was supported in part from the Purdue Center for Secure Microelectronics Ecosystem – CSME#210205.*
+*This work was supported in part from the Purdue Center for Secure Microelectronics Ecosystem – CSME#210205 and the Center for the Co-Design of Cognitive Systems (CoCoSys), a DARPA-sponsored JUMP 2.0 center.*
 
 Parts of this code were built upon [DCTNet](https://github.com/kaix90/DCTNet), [PT-MAP-sf](https://github.com/xiangyu8/PT-MAP-sf), and [Concrete-ML](https://github.com/zama-ai/concrete-ml).
 
-We would also like to thank the Zama Concrete-ML team and the community on [FHE Discord](https://fhe.org/community.html) for their support and 
-interesting discussions!
+We would also like to thank the Zama Concrete-ML team and the community on [FHE Discord](https://fhe.org/community.html) for their support and interesting discussions!
