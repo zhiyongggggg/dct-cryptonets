@@ -31,6 +31,8 @@ from utils import accuracy, AverageMeter, BaselineTrain
 use_gpu = torch.cuda.is_available()
 print(f'Using GPU: {use_gpu}\n')
 
+cifar_path = "./cifardataset"
+
 
 @torch.no_grad()
 def test_unencrypted(model, criterion, data_loader):
@@ -134,10 +136,10 @@ def main():
 
     # Dataset
     if params.dataset == 'cifar10':
-        trainset = datasets.CIFAR10(root=params.dataset_path, train=True, download=True, transform=test_transform)
-        calibset = datasets.CIFAR10(root=params.dataset_path, train=True, download=True, transform=test_transform)
-        valset = datasets.CIFAR10(root=params.dataset_path, train=True, download=True, transform=test_transform)
-        testset = datasets.CIFAR10(root=params.dataset_path, train=False, download=True, transform=test_transform)
+        trainset = datasets.CIFAR10(root=cifar_path, train=True, download=True, transform=test_transform)
+        calibset = datasets.CIFAR10(root=cifar_path, train=True, download=True, transform=test_transform)
+        valset = datasets.CIFAR10(root=cifar_path, train=True, download=True, transform=test_transform)
+        testset = datasets.CIFAR10(root=cifar_path, train=False, download=True, transform=test_transform)
 
         num_train = len(trainset)
         train_idx, val_idx = train_test_split(np.arange(num_train), test_size=params.test_subset, random_state=42)
@@ -316,7 +318,11 @@ def main():
 
     # Test model in (unencrypted) non-FHE mode
     print(f'\nRunning UNENCRYPTED model on a subset of {params.test_subset} images...')
-    model.cuda()
+    if torch.cuda.is_available() and params.gpu >= 0:
+        model.cuda()
+    else:
+        model.cpu()
+
     top1_val, top5_val, loss_val = test_unencrypted(model, criterion, val_loader)
     top1_test, top5_test, loss_test = test_unencrypted(model, criterion, test_loader)
     print(f'[Validation] Top-1 Acc: {top1_val.avg:.3f}% | Top-5 Acc: {top5_val.avg:.3f}% | Avg. Loss: {loss_val.avg:.3f}')
@@ -359,7 +365,10 @@ def main():
     # Run reliability analysis over a range of 20 random datasets subsets
     if params.reliability_test is not None and params.fhe_mode == 'simulate':
         print('\n============ Encrypted Reliability Analysis ============')
-        model.cuda()
+        if torch.cuda.is_available() and params.gpu >= 0:
+            model.cuda()
+        else:
+            model.cpu()
         # Test on multiple random states
         random_states = [x for x in range(27, 37)]
         top1_plain = []
