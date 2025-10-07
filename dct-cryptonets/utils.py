@@ -26,6 +26,7 @@ class BaselineTrain(nn.Module):
         self.loss_fn = nn.CrossEntropyLoss()
         self.best_prec1_val = None
 
+    """     
     def forward(self, x):
         x = Variable(x.cuda())
         out = self.feature.forward(x)
@@ -35,6 +36,19 @@ class BaselineTrain(nn.Module):
     def forward_loss(self, x, y):
         scores = self.forward(x)
         y = Variable(y.cuda())
+        return self.loss_fn(scores, y) 
+    """
+    # NEW
+    def forward(self, x):
+        device = next(self.parameters()).device  # Get the device the model is on
+        x = Variable(x.to(device))
+        out = self.feature.forward(x)
+        scores = self.classifier.forward(out)
+        return out, scores
+    def forward_loss(self, x, y):
+        scores = self.forward(x)
+        device = next(self.parameters()).device
+        y = Variable(y.to(device))
         return self.loss_fn(scores, y)
 
     def train_loop(self, epoch, train_loader, optimizer):
@@ -149,7 +163,11 @@ def pred_classes(params, model, test_data):
     model.eval()
     with torch.no_grad():  # We are using no_grad instead of inference_mode for better compatibility
         for images, labels in torch.utils.data.DataLoader(dataset=test_data, batch_size=params.test_batch_size):
-            images, labels = images.cuda(), labels.cuda()
+            # images, labels = images.cuda(), labels.cuda()
+            # new
+            device = next(model.parameters()).device
+            images, labels = images.to(device), labels.to(device)
+            
             f, prediction_logits = model.forward(images)
             predictions = prediction_logits.argmax(dim=1).cpu().numpy()
             predicted_labels.extend(predictions)

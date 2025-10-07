@@ -394,7 +394,12 @@ def main():
                 )
 
             # Plaintext accuracy on test-set
-            model.cuda()
+            if torch.cuda.is_available() and params.gpu >= 0:
+                model.cuda()
+                print("Running on GPU")
+            else:
+                model.cpu()
+                print("Running on CPU")
             top1_p, top5_p, loss_p = test_unencrypted(model, criterion, test_loader)
             top1_plain.append(top1_p.avg)
             top5_plain.append(top5_p.avg)
