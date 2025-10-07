@@ -12,10 +12,10 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 # General parameters
 gpu=0
 model=ResNet18qat
-dataset=ImageNet
-num_classes=1000
+dataset=cifar10
+num_classes=10
 dataset_path=/home/datasets/imagenet/imagenet2012/
-checkpoint_path=/home/arjunroy/Repos/dct-cryptonets/checkpoints/ImageNet/ResNet18qat_dct/filter_8_pattern_default_input_64_56_56_bitwidth_4/best.tar
+# checkpoint_path=/home/arjunroy/Repos/dct-cryptonets/checkpoints/ImageNet/ResNet18qat_dct/filter_8_pattern_default_input_64_56_56_bitwidth_4/best.tar
 bit_width=4                 # QAT trained bit-width. Set to 4 if cifar10, mini-ImageNet, Imagenette; otherwise 5 if ImageNet
 
 # Homomorphic encryption parameters (Dataset batch/subset sizes are dependent on this)
@@ -31,8 +31,8 @@ verbose=True
 
 # DCT parameters
 dct_status=Y                # Set to N if running RGB-based model
-image_size=56               # Set to 224 if running RGB-based model
-channels=64                 # Set to 3 if running RGB-based model
+image_size=32               # Set to 224 if running RGB-based model
+channels=3                 # Set to 3 if running RGB-based model
 filter_size=8               # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
 dct_pattern=default
 
@@ -60,7 +60,7 @@ echo "-----DCT parameters-----"
 echo "dct_status=${dct_status}"
 echo "image_size=${image_size}"
 
-
+# --checkpoint_path "${checkpoint_path}" \ removed temporarily
 if [ "${dct_status}" == Y ]; then
   echo "filter_size=${filter_size}"
   echo "dct_pattern=${dct_pattern}"
@@ -69,7 +69,6 @@ if [ "${dct_status}" == Y ]; then
     --dataset "${dataset}" \
     --model "${model}" \
     --num_classes "${num_classes}" \
-    --checkpoint_path "${checkpoint_path}" \
     --dataset_path "${dataset_path}" \
     --image_size_dct "${image_size}" \
     --channels "${channels}" \
