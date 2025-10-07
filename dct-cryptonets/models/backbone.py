@@ -409,6 +409,15 @@ all_network_perturbations = {
         'avgpool_kernel': 3,
     },
     # RGB-Based ResNet18
+    '64_6_32': { # added this for my own use case
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 3,
+    },
     '64_3_32': {
         'conv1_kernel': 3,
         'conv1_stride': 1,

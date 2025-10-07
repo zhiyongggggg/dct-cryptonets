@@ -222,6 +222,8 @@ def main():
         )
     )
     print(f'Number Parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}')
+
+    """
     print('\n============Model Summary============')
     # Ignore parameter count calculated from torchinfo.summary as it doesn't play well with Brevitas QAT
     # Used solely for understanding network topology and tensor dimension changes
@@ -234,17 +236,22 @@ def main():
         summary(
             model.module.feature.to('cpu'),
             input_size=(1, params.channels, params.image_size, params.image_size)
-        )
+        ) 
+    """
 
     # Loss
     criterion = nn.CrossEntropyLoss()
 
     # Load checkpoint
     print('\nLoading checkpoint...')
-    checkpoint = torch.load(params.checkpoint_path, map_location=device)
-    model.load_state_dict(checkpoint['state'])
-    model.module.best_prec1_val = checkpoint["prec1"]
-    print(f'Loaded checkpoint {params.checkpoint_path} ({model.module.best_prec1_val:.3f}% Top-1 Acc. @ epoch {checkpoint["epoch"]})')
+    if params.checkpoint_path and os.path.exists(params.checkpoint_path):
+        checkpoint = torch.load(params.checkpoint_path, map_location=device)
+        model.load_state_dict(checkpoint['state'])
+        model.module.best_prec1_val = checkpoint["prec1"]
+        print(f'Loaded checkpoint {params.checkpoint_path} ({model.module.best_prec1_val:.3f}% Top-1 Acc. @ epoch {checkpoint["epoch"]})')
+    else:
+        print("WARNING: No checkpoint loaded. Using random weights (for testing only)")
+        print("Results will NOT be meaningful!")
 
     # Create post-trained quantization calibration data which is first batch of train data
     for data, _ in calib_loader:
