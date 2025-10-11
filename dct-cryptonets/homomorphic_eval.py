@@ -318,7 +318,7 @@ def main():
 
     # Test model in (unencrypted) non-FHE mode
     print(f'\nRunning UNENCRYPTED model on a subset of {params.test_subset} images...')
-    if torch.cuda.is_available() and params.gpu >= 0:
+    if torch.cuda.is_available():
         model.cuda()
     else:
         model.cpu()
@@ -365,7 +365,7 @@ def main():
     # Run reliability analysis over a range of 20 random datasets subsets
     if params.reliability_test is not None and params.fhe_mode == 'simulate':
         print('\n============ Encrypted Reliability Analysis ============')
-        if torch.cuda.is_available() and params.gpu >= 0:
+        if torch.cuda.is_available():
             model.cuda()
         else:
             model.cpu()
@@ -403,7 +403,7 @@ def main():
                 )
 
             # Plaintext accuracy on test-set
-            if torch.cuda.is_available() and params.gpu >= 0:
+            if torch.cuda.is_available():
                 model.cuda()
                 print("Running on GPU")
             else:
