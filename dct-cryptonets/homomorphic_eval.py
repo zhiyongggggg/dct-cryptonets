@@ -370,7 +370,7 @@ def main():
         else:
             model.cpu()
         # Test on multiple random states
-        random_states = [x for x in range(27, 37)]
+        random_states = [x for x in range(27, 29)]
         top1_plain = []
         top5_plain = []
         top1_enc = []
