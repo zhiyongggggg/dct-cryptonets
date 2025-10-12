@@ -32,7 +32,7 @@ verbose=True
 # DCT parameters
 dct_status=Y                # Set to N if running RGB-based model
 image_size=32               # Set to 224 if running RGB-based model
-channels=6                 # Set to 3 if running RGB-based model
+channels=24                 # Set to 3 if running RGB-based model
 filter_size=4               # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
 dct_pattern=default
 

@@ -355,6 +355,15 @@ all_network_perturbations = {
         'avgpool_kernel': 7,
     },
     # DCT-CryptoNets ResNet20 models
+    '48_24_32': { # added for my own use
+    'conv1_kernel': 1,
+    'conv1_stride': 1,
+    'conv1_padding': 0,
+    'relu1': True,
+    'pool1_kernel': None,
+    'pool1_stride': None,
+    'avgpool_kernel': 16,
+    },
     '48_3_32': {
         'conv1_kernel': 3,
         'conv1_stride': 1,
