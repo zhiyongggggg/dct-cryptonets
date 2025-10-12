@@ -52,6 +52,14 @@ image_size=64
 channels=24
 filter_size=4
 
+# Resnet20 ImageNet (Non-DCT)
+dct_status=N
+dataset=ImageNet
+model=ResNet20qat
+image_size=32 
+channels=3
+filter_size=4
+
 
 
 echo "-----General parameters-----"
