@@ -11,7 +11,7 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 # ------ User Arguments ------
 # General parameters
 gpu=0
-model=ResNet18qat
+model=ResNet20qat
 dataset=cifar10
 num_classes=10
 dataset_path=/home/datasets/imagenet/imagenet2012/
@@ -33,7 +33,7 @@ verbose=True
 dct_status=Y                # Set to N if running RGB-based model
 image_size=32               # Set to 224 if running RGB-based model
 channels=6                 # Set to 3 if running RGB-based model
-filter_size=8               # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
+filter_size=4               # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
 dct_pattern=default
 
 
