@@ -11,10 +11,8 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 # ------ User Arguments ------
 # General parameters
 gpu=0
-model=ResNet18qat
-dataset=cifar10
 num_classes=10
-dataset_path=/home/datasets/imagenet/imagenet2012/
+dataset_path=/hdd/zlim135/Git/dct-cryptonets/all_dataset/ImageNette/imagenette2/
 # checkpoint_path=/home/arjunroy/Repos/dct-cryptonets/checkpoints/ImageNet/ResNet18qat_dct/filter_8_pattern_default_input_64_56_56_bitwidth_4/best.tar
 bit_width=4                 # QAT trained bit-width. Set to 4 if cifar10, mini-ImageNet, Imagenette; otherwise 5 if ImageNet
 
@@ -31,10 +29,29 @@ verbose=True
 
 # DCT parameters
 dct_status=Y                # Set to N if running RGB-based model
-image_size=32               # Set to 224 if running RGB-based model
-channels=6                 # Set to 3 if running RGB-based model
-filter_size=8               # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
 dct_pattern=default
+
+# Resnet18 CIFAR
+#dataset=cifar10
+#model=ResNet18qat
+#image_size=32               # Set to 224 if running RGB-based model
+#channels=6                 # Set to 3 if running RGB-based model
+#filter_size=8               # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
+
+# Resnet20 CIFAR
+#dataset=cifar10
+#model=ResNet20qat
+#image_size=32
+#channels=24
+#filter_size=4
+
+# Resnet20 ImageNet
+dataset=ImageNet
+model=ResNet20qat
+image_size=64 
+channels=24
+filter_size=4
+
 
 
 echo "-----General parameters-----"
