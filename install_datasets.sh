@@ -32,7 +32,7 @@ fi
 # Set dataset directory
 ROOT_DIR=${pwd}
 DATASET_DIR=${parameterD}
-cd DATASET_DIR
+cd "$DATASET_DIR"
 
 # ImageNette
 if [ "${parameterA}" == Y ]; then
@@ -42,7 +42,7 @@ if [ "${parameterA}" == Y ]; then
   cd ImageNette
   wget https://s3.amazonaws.com/fast-ai-imageclas/imagenette2.tgz
   tar -zxvf imagenette2.tgz
-  cd DATASET_DIR
+  cd "$DATASET_DIR"
 fi
 
 # miniImageNet
@@ -57,9 +57,9 @@ if [ "${parameterB}" == Y ]; then
   wget http://image-net.org/image/ILSVRC2015/ILSVRC2015_CLS-LOC.tar.gz
   tar -zxvf ILSVRC2015_CLS-LOC.tar.gz
 
-  cd ROOT_DIR
+  cd "$ROOT_DIR"
   python compressed_cryptonetes/data/make_miniImagenet_json.py --dataset_dir DATASET_DIR
-  cd DATASET_DIR
+  cd "$DATASET_DIR"
 fi
 
 # ImageNet-1K
