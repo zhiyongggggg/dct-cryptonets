@@ -12,7 +12,7 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 # General parameters
 gpu=0
 model=ResNet20qat
-dataset=imagenette
+dataset=ImageNet
 num_classes=10
 dataset_path=../all_dataset/ImageNette/imagenette/
 # checkpoint_path=/home/arjunroy/Repos/dct-cryptonets/checkpoints/ImageNet/ResNet18qat_dct/filter_8_pattern_default_input_64_56_56_bitwidth_4/best.tar
