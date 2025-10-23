@@ -103,6 +103,123 @@ class SimpleQBlock(nn.Module):
         out = self.relu2(out)
         return out
 
+class BottleneckBlock(nn.Module):
+    """ Bottleneck ResNet Block for ResNet50+ """
+    expansion = 4
+    
+    def __init__(self, indim, outdim, half_res):
+        super(BottleneckBlock, self).__init__()
+        self.indim = indim
+        self.outdim = outdim
+        
+        # 1x1 conv to reduce dimensions
+        self.C1 = nn.Conv2d(indim, outdim, kernel_size=1, bias=False)
+        self.BN1 = nn.BatchNorm2d(outdim)
+        self.relu1 = nn.ReLU(inplace=True)
+        
+        # 3x3 conv
+        self.C2 = nn.Conv2d(outdim, outdim, kernel_size=3, stride=2 if half_res else 1, padding=1, bias=False)
+        self.BN2 = nn.BatchNorm2d(outdim)
+        self.relu2 = nn.ReLU(inplace=True)
+        
+        # 1x1 conv to expand dimensions
+        self.C3 = nn.Conv2d(outdim, outdim * self.expansion, kernel_size=1, bias=False)
+        self.BN3 = nn.BatchNorm2d(outdim * self.expansion)
+        self.relu3 = nn.ReLU(inplace=True)
+
+        self.parametrized_layers = [self.C1, self.C2, self.C3, self.BN1, self.BN2, self.BN3]
+        self.half_res = half_res
+
+        # Shortcut connection
+        if indim != outdim * self.expansion:
+            self.shortcut = nn.Conv2d(indim, outdim * self.expansion, 1, 2 if half_res else 1, bias=False)
+            self.BNshortcut = nn.BatchNorm2d(outdim * self.expansion)
+            self.parametrized_layers.append(self.shortcut)
+            self.parametrized_layers.append(self.BNshortcut)
+            self.shortcut_type = '1x1'
+        else:
+            self.shortcut_type = 'identity'
+
+        for layer in self.parametrized_layers:
+            init_layer(layer)
+
+    def forward(self, x):
+        out = self.C1(x)
+        out = self.BN1(out)
+        out = self.relu1(out)
+        
+        out = self.C2(out)
+        out = self.BN2(out)
+        out = self.relu2(out)
+        
+        out = self.C3(out)
+        out = self.BN3(out)
+        
+        short_out = x if self.shortcut_type == 'identity' else self.BNshortcut(self.shortcut(x))
+        out = out + short_out
+        out = self.relu3(out)
+        return out
+
+
+class BottleneckQBlock(nn.Module):
+    """ Quantized Bottleneck ResNet Block for ResNet50+ """
+    expansion = 4
+    
+    def __init__(self, indim, outdim, half_res, qconv_args, qidentity_args):
+        super().__init__()
+        self.indim = indim
+        self.outdim = outdim
+        
+        # 1x1 conv to reduce dimensions
+        self.C1 = qnn.QuantConv2d(indim, outdim, kernel_size=1, **qconv_args)
+        self.BN1 = nn.BatchNorm2d(outdim)
+        self.relu1 = qnn.QuantReLU(bit_width=qidentity_args["bit_width"])
+        
+        # 3x3 conv
+        self.C2 = qnn.QuantConv2d(outdim, outdim, kernel_size=3, stride=2 if half_res else 1, padding=1, **qconv_args)
+        self.BN2 = nn.BatchNorm2d(outdim)
+        self.relu2 = qnn.QuantReLU(bit_width=qidentity_args["bit_width"])
+        
+        # 1x1 conv to expand dimensions
+        self.C3 = qnn.QuantConv2d(outdim, outdim * self.expansion, kernel_size=1, **qconv_args)
+        self.BN3 = nn.BatchNorm2d(outdim * self.expansion)
+        self.relu3 = qnn.QuantReLU(bit_width=qidentity_args["bit_width"])
+        self.quant_out = qnn.QuantIdentity(return_quant_tensor=False, scaling_init=1.0, **qidentity_args)
+
+        self.parametrized_layers = [self.C1, self.C2, self.C3, self.BN1, self.BN2, self.BN3]
+        self.half_res = half_res
+
+        # Shortcut connection
+        if indim != outdim * self.expansion:
+            self.shortcut = qnn.QuantConv2d(indim, outdim * self.expansion, 1, 2 if half_res else 1, **qconv_args)
+            self.BNshortcut = nn.BatchNorm2d(outdim * self.expansion)
+            self.BNquant_out = qnn.QuantIdentity(return_quant_tensor=False, scaling_init=1.0, **qidentity_args)
+            self.parametrized_layers.append(self.shortcut)
+            self.parametrized_layers.append(self.BNshortcut)
+            self.shortcut_type = '1x1'
+        else:
+            self.shortcut_type = 'identity'
+
+        for layer in self.parametrized_layers:
+            init_layer(layer)
+
+    def forward(self, x):
+        out = self.C1(x)
+        out = self.BN1(out)
+        out = self.relu1(out)
+        
+        out = self.C2(out)
+        out = self.BN2(out)
+        out = self.relu2(out)
+        
+        out = self.C3(out)
+        out = self.BN3(out)
+        out = self.quant_out(out)
+        
+        short_out = x if self.shortcut_type == 'identity' else self.BNquant_out(self.BNshortcut(self.shortcut(x)))
+        out = torch.add(out, short_out)
+        out = self.relu3(out)
+        return out
 
 class ResNetDCT(nn.Module):
     """
@@ -333,6 +450,30 @@ def ResNet18QAT(flatten=True, bit_width=4, in_channels=3, img_size=224):
     model = ResNetQDCT(
         SimpleQBlock,
         [2, 2, 2, 2],
+        [64, 128, 256, 512],
+        flatten,
+        in_channels=in_channels,
+        img_size=img_size,
+        bit_width=bit_width
+    )
+    return model
+
+def ResNet50(flatten=True, in_channels=3, img_size=224):
+    model = ResNetDCT(
+        BottleneckBlock,
+        [3, 4, 6, 3],
+        [64, 128, 256, 512],
+        flatten,
+        in_channels=in_channels,
+        img_size=img_size,
+    )
+    return model
+
+
+def ResNet50QAT(flatten=True, bit_width=4, in_channels=3, img_size=224):
+    model = ResNetQDCT(
+        BottleneckQBlock,
+        [3, 4, 6, 3],
         [64, 128, 256, 512],
         flatten,
         in_channels=in_channels,
