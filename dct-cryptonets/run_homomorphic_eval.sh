@@ -28,7 +28,7 @@ reliability_test=True
 verbose=True
 
 # DCT parameters
-dct_status=Y                # Set to N if running RGB-based model
+dct_status=N                # Set to N if running RGB-based model
 dct_pattern=default
 
 # Resnet18 CIFAR
@@ -53,12 +53,18 @@ channels=24
 filter_size=4
 
 # Resnet20 ImageNet (Non-DCT)
-dct_status=N
-dataset=ImageNet
-model=ResNet20qat
-image_size=32 
-channels=3
-filter_size=4
+#dataset=ImageNet
+#model=ResNet20qat
+#image_size=32 
+#channels=3
+#filter_size=4
+
+# Resnet18 ImageNet (Non-DCT)
+dataset=ImageNette
+model=ResNet18qat
+image_size=64 
+channels=6
+filter_size=8
 
 
 
