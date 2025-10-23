@@ -63,7 +63,7 @@ filter_size=4
 dataset=ImageNet
 model=ResNet18qat
 image_size=64 
-channels=6
+channels=3
 filter_size=8
 
 
