@@ -5,7 +5,7 @@
 
 set -e
 eval "$(conda shell.bash hook)"
-conda activate dct-cryptonets
+conda activate zlim135env_dctcryptonets
 export BREVITAS_IGNORE_MISSING_KEYS=1
 
 # ------ User Arguments ------
@@ -60,7 +60,7 @@ filter_size=4
 #filter_size=4
 
 # Resnet18 ImageNet (Non-DCT)
-dataset=ImageNette
+dataset=ImageNet
 model=ResNet18qat
 image_size=64 
 channels=6
