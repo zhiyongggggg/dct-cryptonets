@@ -46,11 +46,11 @@ dct_pattern=default
 #filter_size=4
 
 # Resnet20 ImageNet
-dataset=ImageNet
-model=ResNet20qat
-image_size=64 
-channels=24
-filter_size=4
+#dataset=ImageNet
+#model=ResNet20qat
+#image_size=64 
+#channels=24
+#filter_size=4
 
 # Resnet20 ImageNet (Non-DCT)
 #dataset=ImageNet
@@ -62,7 +62,7 @@ filter_size=4
 # Resnet18 ImageNet (Non-DCT)
 dataset=ImageNet
 model=ResNet18qat
-image_size=64 
+image_size=224
 channels=3
 filter_size=8
 
