@@ -436,6 +436,15 @@ all_network_perturbations = {
         'pool1_stride': None,
         'avgpool_kernel': 3,
     },
+        '64_6_64': { # added this for my own use case
+        'conv1_kernel': 1,
+        'conv1_stride': 1,
+        'conv1_padding': 0,
+        'relu1': False,
+        'pool1_kernel': None,
+        'pool1_stride': None,
+        'avgpool_kernel': 7,
+    },
     '64_3_32': {
         'conv1_kernel': 3,
         'conv1_stride': 1,
