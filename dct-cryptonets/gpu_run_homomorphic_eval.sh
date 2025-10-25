@@ -13,9 +13,10 @@ export CUDA_VISIBLE_DEVICES=0              # Select GPU device
 export CONCRETE_USE_GPU=1                  # Enable GPU for Concrete
 export CONCRETE_GPU_MEMORY_FRACTION=0.8    # Use 80% of GPU memory
 
-# Fix CUDA library paths (adjust based on your CUDA installation)
+# Fix CUDA library paths for system CUDA installation
+export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 # ------ User Arguments ------
 # General parameters
