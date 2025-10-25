@@ -284,7 +284,11 @@ class ResNetDCT(nn.Module):
                     half_res = (i >= 1) and (j == 0)
                 B = block(indim, list_out_dims[i], half_res)
                 trunk.append(B)
-                indim = list_out_dims[i]
+                # FIX: Account for expansion in bottleneck blocks
+                if hasattr(block, 'expansion'):
+                    indim = list_out_dims[i] * block.expansion
+                else:
+                    indim = list_out_dims[i]
 
         if flatten:
             avgpool = nn.AvgPool2d(net_perturbation['avgpool_kernel'])
@@ -387,7 +391,11 @@ class ResNetQDCT(nn.Module):
                     half_res = (i >= 1) and (j == 0)
                 B = block(indim, list_out_dims[i], half_res, self.qconv_args, self.qidentity_args)
                 trunk.append(B)
-                indim = list_out_dims[i]
+                # FIX: Account for expansion in bottleneck blocks
+                if hasattr(block, 'expansion'):
+                    indim = list_out_dims[i] * block.expansion
+                else:
+                    indim = list_out_dims[i]
 
         if flatten:
             avgpool = nn.AvgPool2d(net_perturbation['avgpool_kernel'])

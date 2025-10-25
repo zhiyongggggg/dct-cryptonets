@@ -61,7 +61,7 @@ dct_pattern=default
 
 # Resnet18 ImageNet (Non-DCT)
 dataset=ImageNet
-model=ResNet18qat
+model=ResNet50qat
 image_size=224
 channels=3
 filter_size=8
