@@ -496,12 +496,12 @@ def ResNet50QAT(flatten=True, bit_width=4, in_channels=3, img_size=224):
 all_network_perturbations = {
     # Traditional ResNet20 models
     '16_3_32': {
-        'conv1_kernel': 3,
-        'conv1_stride': 1,
-        'conv1_padding': 1,
-        'pool1_kernel': None,
-        'pool1_stride': None,
-        'avgpool_kernel': 7,
+        'conv1_kernel': 3, # kernal size of first convolutional layer (spatial size of the sliding window)
+        'conv1_stride': 1, # stride for first convolutional layer
+        'conv1_padding': 1, # # padding for first convolutional layer
+        'pool1_kernel': None, # kernel size of the first pooling layer (usually MaxPool)
+        'pool1_stride': None, # stride for Pool1
+        'avgpool_kernel': 7, # size of final global average pooling layer
     },
     # DCT-CryptoNets ResNet20 models
     '48_24_32': { # added for my own use
