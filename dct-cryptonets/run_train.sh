@@ -5,7 +5,7 @@
 
 set -e
 eval "$(conda shell.bash hook)"
-conda activate dct-cryptonets
+conda activate zlim135env_gpu_dctcryptonets
 export BREVITAS_IGNORE_MISSING_KEYS=1
 
 # ------ User Arguments ------
