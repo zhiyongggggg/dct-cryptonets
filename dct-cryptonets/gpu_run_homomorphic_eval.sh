@@ -38,14 +38,14 @@ reliability_test=False     # Set to False for initial GPU testing
 verbose=True
 
 # DCT parameters
-dct_status=Y
+dct_status=N
 dct_pattern=default
 
-# ResNet50 ImageNet with DCT
+# ResNet18 ImageNet with DCT
 dataset=ImageNet
-model=ResNet50qat
+model=ResNet18qat
 image_size=224
-channels=64
+channels=3
 filter_size=8
 
 echo "=========================================="
