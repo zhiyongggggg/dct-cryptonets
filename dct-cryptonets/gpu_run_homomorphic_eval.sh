@@ -101,7 +101,7 @@ echo ""
 if [ "${dct_status}" == Y ]; then
   CUDA_VISIBLE_DEVICES="${gpu}" python -u gpu_homomorphic_eval.py \
     --dataset "${dataset}" \
-    --checkpoint_dir "${checkpoint_dir}" \
+    --checkpoint_path "${checkpoint_path}" \
     --model "${model}" \
     --num_classes "${num_classes}" \
     --dataset_path "${dataset_path}" \
