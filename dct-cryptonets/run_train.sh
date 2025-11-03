@@ -13,13 +13,13 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 gpu=0                  # Multi-GPU training is not currently supported with QAT Brevitas
 model=ResNet18qat
 dataset=ImageNet
-num_classes=1000
-dataset_path=/home/datasets/imagenet/imagenet2012/
-checkpoint_dir=/home/arjunroy/Desktop/
+num_classes=10
+dataset_path=/hdd/zlim135/Git/dct-cryptonets/all_dataset/ImageNette/imagenette2/
+#checkpoint_dir=/home/arjunroy/Desktop/
 resume=
 
 # Training parameters
-epochs=10
+epochs=3
 batch_size=256
 test_batch_size=512
 num_workers=4
@@ -35,9 +35,9 @@ checkpoint_save_freq=5
 bit_width=4             # QAT trained bit-width. Set to 4 if cifar10, mini-ImageNet, Imagenette; otherwise 5 if ImageNet
 
 # DCT parameters
-dct_status=Y            # Set to N if running RGB-based network
-image_size=56           # Set to 224 if running RGB-based network
-channels=64             # Set to 3 if running RGB-based network
+dct_status=N            # Set to N if running RGB-based network
+image_size=224           # Set to 224 if running RGB-based network
+channels=3             # Set to 3 if running RGB-based network
 filter_size=8           # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
 dct_pattern=default
 
@@ -76,7 +76,6 @@ if [ "${dct_status}" == Y ]; then
   CUDA_VISIBLE_DEVICES="${gpu}" python -u train.py \
     --dataset "${dataset}" \
     --dataset_path "${dataset_path}" \
-    --checkpoint_dir "${checkpoint_dir}" \
     --resume "${resume}" \
     --num_classes "${num_classes}" \
     --model "${model}" \
@@ -103,7 +102,6 @@ else
   CUDA_VISIBLE_DEVICES="${gpu}" python -u train.py \
     --dataset "${dataset}" \
     --dataset_path "${dataset_path}" \
-    --checkpoint_dir "${checkpoint_dir}" \
     --resume "${resume}" \
     --num_classes "${num_classes}" \
     --model "${model}" \

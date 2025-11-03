@@ -21,7 +21,7 @@ export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 # ------ User Arguments ------
 # General parameters
 gpu=0
-num_classes=1000
+num_classes=10
 dataset_path=/hdd/zlim135/Git/dct-cryptonets/all_dataset/ImageNette/imagenette2/
 bit_width=4
 
