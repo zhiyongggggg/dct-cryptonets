@@ -23,6 +23,7 @@ export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 gpu=0
 num_classes=10
 dataset_path=/hdd/zlim135/Git/dct-cryptonets/all_dataset/ImageNette/imagenette2/
+checkpoint_path=/hdd/zlim135/Git/dct-cryptonets/checkpoint_dir/ImageNette/imagenette2/best.tar
 bit_width=4
 
 # Homomorphic encryption parameters
@@ -100,6 +101,7 @@ echo ""
 if [ "${dct_status}" == Y ]; then
   CUDA_VISIBLE_DEVICES="${gpu}" python -u gpu_homomorphic_eval.py \
     --dataset "${dataset}" \
+    --checkpoint_dir "${checkpoint_dir}" \
     --model "${model}" \
     --num_classes "${num_classes}" \
     --dataset_path "${dataset_path}" \
@@ -121,6 +123,7 @@ if [ "${dct_status}" == Y ]; then
 else
   CUDA_VISIBLE_DEVICES="${gpu}" python -u homomorphic_eval.py \
     --dataset "${dataset}" \
+    --checkpoint_dir "${checkpoint_dir}" \
     --model "${model}" \
     --num_classes "${num_classes}" \
     --checkpoint_path "${checkpoint_path}" \
