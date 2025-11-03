@@ -123,7 +123,7 @@ if [ "${dct_status}" == Y ]; then
 else
   CUDA_VISIBLE_DEVICES="${gpu}" python -u homomorphic_eval.py \
     --dataset "${dataset}" \
-    --checkpoint_dir "${checkpoint_dir}" \
+    --checkpoint_path "${checkpoint_path}" \
     --model "${model}" \
     --num_classes "${num_classes}" \
     --checkpoint_path "${checkpoint_path}" \
