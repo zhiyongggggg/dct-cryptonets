@@ -15,7 +15,7 @@ model=ResNet18qat
 dataset=ImageNet
 num_classes=10
 dataset_path=/hdd/zlim135/Git/dct-cryptonets/all_dataset/ImageNette/imagenette2/
-#checkpoint_dir=/home/arjunroy/Desktop/
+checkpoint_dir=/hdd/zlim135/Git/dct-cryptonets/checkpoint_dir/ImageNette/imagenette2/
 resume=
 
 # Training parameters
@@ -76,6 +76,7 @@ if [ "${dct_status}" == Y ]; then
   CUDA_VISIBLE_DEVICES="${gpu}" python -u train.py \
     --dataset "${dataset}" \
     --dataset_path "${dataset_path}" \
+    --checkpoint_dir "${checkpoint_dir}" \
     --resume "${resume}" \
     --num_classes "${num_classes}" \
     --model "${model}" \
@@ -102,6 +103,7 @@ else
   CUDA_VISIBLE_DEVICES="${gpu}" python -u train.py \
     --dataset "${dataset}" \
     --dataset_path "${dataset_path}" \
+    --checkpoint_dir "${checkpoint_dir}" \
     --resume "${resume}" \
     --num_classes "${num_classes}" \
     --model "${model}" \
