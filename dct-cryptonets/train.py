@@ -17,6 +17,7 @@ import torchvision.datasets as datasets
 from torch.utils.data.sampler import SubsetRandomSampler
 from sklearn.model_selection import train_test_split
 from torchinfo import summary
+import gc
 
 # Local modules
 from io_utils import model_dict, parse_args
@@ -27,6 +28,13 @@ from utils import *
 use_gpu = torch.cuda.is_available()
 print(f'Using GPU: {use_gpu}\n')
 
+
+def clear_memory():
+    """Clear GPU and Python memory"""
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
 
 def train(params, model, optimizer, criterion, train_loader, val_loader, start_epoch, stop_epoch, early_stopping):
 
@@ -182,6 +190,7 @@ def test(model, criterion, val_loader, test_loader):
 
 
 def main():
+    clear_memory()
     params = parse_args('train')
 
     start_epoch = params.start_epoch

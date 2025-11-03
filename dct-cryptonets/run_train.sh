@@ -20,8 +20,8 @@ resume=
 
 # Training parameters
 epochs=3
-batch_size=256
-test_batch_size=512
+batch_size=16
+test_batch_size=32
 num_workers=4
 optimizer=adam
 lr=0.001
