@@ -121,7 +121,7 @@ if [ "${dct_status}" == Y ]; then
     --verbose "${verbose}" \
     --dct_status
 else
-  CUDA_VISIBLE_DEVICES="${gpu}" python -u homomorphic_eval.py \
+  CUDA_VISIBLE_DEVICES="${gpu}" python -u gpu_homomorphic_eval.py \
     --dataset "${dataset}" \
     --checkpoint_path "${checkpoint_path}" \
     --model "${model}" \
