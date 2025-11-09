@@ -110,8 +110,14 @@ class EarlyStopper:
 
 def accuracy(output, target, topk=(1,)):
     """ Computes the precision@k for the specified values of k """
+def accuracy(output, target, topk=(1,)):
+    """ Computes the precision@k for the specified values of k """
     maxk = max(topk)
     batch_size = target.size(0)
+    num_classes = output.size(1)
+    
+    maxk = min(maxk, num_classes)
+    topk = tuple(min(k, num_classes) for k in topk)
 
     _, pred = output.topk(maxk, 1, True, True)
     pred = pred.t()
