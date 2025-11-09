@@ -164,8 +164,8 @@ def main():
     Main function to run the frame extraction.
     """
     # Configuration
-    DATASET_ROOT = "/path/to/kaggle/dataset"  # Update this path
-    OUTPUT_ROOT = "./extracted_frames"         # Update this path
+    DATASET_ROOT = "/hdd/zlim135/Git/dct-cryptonets/all_dataset/FaceForensic/preprocessed"
+    OUTPUT_ROOT = "/hdd/zlim135/Git/dct-cryptonets/all_dataset/FaceForensic/postprocessed"
     FRAME_INTERVAL = 30  # Extract 1 frame every 30 frames (~1 fps for 30fps video)
     VAL_SPLIT = 0.2      # 20% of videos for validation
     
