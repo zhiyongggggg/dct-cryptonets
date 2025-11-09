@@ -14,8 +14,8 @@ gpu=0                  # Multi-GPU training is not currently supported with QAT 
 model=ResNet18qat
 dataset=FaceForensic
 num_classes=2
-dataset_path=/hdd/zlim135/Git/dct-cryptonets/all_dataset/FaceForensic/
-checkpoint_dir=/hdd/zlim135/Git/dct-cryptonets/checkpoint_dir/FaceForensic/
+dataset_path=/hdd/zlim135/Git/dct-cryptonets/all_dataset/FaceForensic/postprocessed/
+checkpoint_dir=/hdd/zlim135/Git/dct-cryptonets/checkpoint_dir/FaceForensic/postprocessed/
 resume=
 
 # Training parameters
