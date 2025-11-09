@@ -21,9 +21,9 @@ export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 # ------ User Arguments ------
 # General parameters
 gpu=0
-num_classes=10
-dataset_path=/hdd/zlim135/Git/dct-cryptonets/all_dataset/ImageNette/imagenette2/
-checkpoint_path=/hdd/zlim135/Git/dct-cryptonets/checkpoint_dir/ImageNette/imagenette2/best.tar
+num_classes=2
+dataset_path=/hdd/zlim135/Git/dct-cryptonets/all_dataset/FaceForensic/postprocessed/
+checkpoint_path=/hdd/zlim135/Git/dct-cryptonets/checkpoint_dir/FaceForensic/postprocessed/best.tar
 bit_width=4
 
 # Homomorphic encryption parameters
@@ -42,7 +42,7 @@ dct_status=N
 dct_pattern=default
 
 # ResNet18 ImageNet with DCT
-dataset=ImageNet
+dataset=FaceForensic
 model=ResNet18qat
 image_size=224
 channels=3
