@@ -31,7 +31,7 @@ class VideoFrameExtractor:
                 'val_output': self.output_root / 'val' / 'real'
             },
             'fake': {
-                'source': self.dataset_root / 'deepfakedetection',
+                'source': self.dataset_root / 'DeepFakeDetection',
                 'train_output': self.output_root / 'train' / 'fake',
                 'val_output': self.output_root / 'val' / 'fake'
             }
