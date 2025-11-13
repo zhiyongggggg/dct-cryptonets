@@ -8,9 +8,20 @@ eval "$(conda shell.bash hook)"
 conda activate zlim135env_gpu_dctcryptonets
 export BREVITAS_IGNORE_MISSING_KEYS=1
 
+# ====== Clear GPU Memory First ======
+echo "Clearing GPU memory..."
+nvidia-smi
+python -c "import torch; torch.cuda.empty_cache(); print('GPU cache cleared')"
+
+# Optional: Kill previous Python processes (use with caution!)
+# pkill -9 python || true
+
+# Set memory allocation strategy
+export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+
 # ------ User Arguments ------
 # General parameters
-gpu=0                  # Multi-GPU training is not currently supported with QAT Brevitas
+gpu=0
 model=ResNet18qat
 dataset=FaceForensic
 num_classes=2
@@ -20,9 +31,9 @@ resume=
 
 # Training parameters
 epochs=10
-batch_size=16
-test_batch_size=32
-num_workers=4
+batch_size=8           # REDUCED from 16 to 8 to save memory
+test_batch_size=16     # REDUCED from 32 to 16
+num_workers=2          # REDUCED from 4 to 2 to save memory
 optimizer=adam
 lr=0.001
 weight_decay=1e-5
@@ -32,16 +43,21 @@ schedule_1=5
 schedule_2=10
 schedule_3=10
 checkpoint_save_freq=5
-bit_width=4             # QAT trained bit-width. Set to 4 if cifar10, mini-ImageNet, Imagenette; otherwise 5 if ImageNet
+bit_width=4
 
 # DCT parameters
-dct_status=N            # Set to N if running RGB-based network
-image_size=224           # Set to 224 if running RGB-based network
-channels=3             # Set to 3 if running RGB-based network
-filter_size=8           # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
+dct_status=N
+image_size=224
+channels=3
+filter_size=8
 dct_pattern=default
 
+echo "====================================="
+echo "GPU Memory Status Before Training"
+echo "====================================="
+nvidia-smi --query-gpu=memory.used,memory.free,memory.total --format=csv
 
+echo ""
 echo "-----General parameters-----"
 echo "model=${model}"
 echo "dataset=${dataset}"
@@ -123,3 +139,9 @@ else
     --bit_width "${bit_width}" \
     --train_aug
 fi
+
+echo ""
+echo "====================================="
+echo "GPU Memory Status After Training"
+echo "====================================="
+nvidia-smi --query-gpu=memory.used,memory.free,memory.total --format=csv
