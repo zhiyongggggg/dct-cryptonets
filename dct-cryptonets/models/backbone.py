@@ -743,7 +743,7 @@ all_network_perturbations = {
         'relu1': False,
         'pool1_kernel': None,
         'pool1_stride': None,
-        'avgpool_kernel': 14,
+        'avgpool_kernel': 28,
     },
     '64_24_224': {
         'conv1_kernel': 1,

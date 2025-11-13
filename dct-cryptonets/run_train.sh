@@ -26,7 +26,7 @@ model=ResNet18qat
 dataset=FaceForensic
 num_classes=2
 dataset_path=/hdd/zlim135/Git/dct-cryptonets/all_dataset/FaceForensic/postprocessed/
-checkpoint_dir=/hdd/zlim135/Git/dct-cryptonets/checkpoint_dir/FaceForensic/postprocessed/
+checkpoint_dir=/hdd/zlim135/Git/dct-cryptonets/checkpoint_dir/FaceForensic/postprocessed_dct/
 resume=
 
 # Training parameters
@@ -46,9 +46,9 @@ checkpoint_save_freq=5
 bit_width=4
 
 # DCT parameters
-dct_status=N
+dct_status=Y
 image_size=224
-channels=3
+channels=6
 filter_size=8
 dct_pattern=default
 
