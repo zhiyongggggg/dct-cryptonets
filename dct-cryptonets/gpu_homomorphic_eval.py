@@ -52,7 +52,7 @@ def test_unencrypted(model, criterion, data_loader, num_classes=2):
 
             # Get predictions for metrics
             _, pred = output.topk(1, 1, True, True)
-            pred = pred.squeeze()
+            pred = pred.view(-1)
 
             # measure accuracy and record loss
             prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
