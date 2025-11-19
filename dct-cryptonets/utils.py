@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
 
 
 class BaselineTrain(nn.Module):
@@ -26,25 +26,13 @@ class BaselineTrain(nn.Module):
         self.loss_fn = nn.CrossEntropyLoss()
         self.best_prec1_val = None
 
-    """     
     def forward(self, x):
-        x = Variable(x.cuda())
-        out = self.feature.forward(x)
-        scores = self.classifier.forward(out)
-        return out, scores
-
-    def forward_loss(self, x, y):
-        scores = self.forward(x)
-        y = Variable(y.cuda())
-        return self.loss_fn(scores, y) 
-    """
-    # NEW
-    def forward(self, x):
-        device = next(self.parameters()).device  # Get the device the model is on
+        device = next(self.parameters()).device
         x = Variable(x.to(device))
         out = self.feature.forward(x)
         scores = self.classifier.forward(out)
         return out, scores
+    
     def forward_loss(self, x, y):
         scores = self.forward(x)
         device = next(self.parameters()).device
@@ -68,7 +56,7 @@ class BaselineTrain(nn.Module):
                                                                         avg_loss / float(i + 1)))
 
     def test_loop(self, val_loader):
-        return -1  # no validation, just save model during iteration
+        return -1
 
 
 class AverageMeter(object):
@@ -87,6 +75,57 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+
+
+class MetricsTracker(object):
+    """Tracks classification metrics including precision, recall, and F1"""
+    def __init__(self, num_classes=2):
+        self.num_classes = num_classes
+        self.reset()
+    
+    def reset(self):
+        self.predictions = []
+        self.targets = []
+    
+    def update(self, preds, targets):
+        """
+        Update with batch predictions and targets
+        Args:
+            preds: tensor of predictions (batch_size,)
+            targets: tensor of ground truth labels (batch_size,)
+        """
+        if isinstance(preds, torch.Tensor):
+            preds = preds.cpu().numpy()
+        if isinstance(targets, torch.Tensor):
+            targets = targets.cpu().numpy()
+        
+        self.predictions.extend(preds.tolist())
+        self.targets.extend(targets.tolist())
+    
+    def compute_metrics(self, average='binary'):
+        """
+        Compute precision, recall, and F1 score
+        Args:
+            average: 'binary' for binary classification, 'macro' or 'weighted' for multi-class
+        Returns:
+            dict with precision, recall, f1_score
+        """
+        if len(self.predictions) == 0:
+            return {'precision': 0.0, 'recall': 0.0, 'f1_score': 0.0}
+        
+        predictions = np.array(self.predictions)
+        targets = np.array(self.targets)
+        
+        # For binary classification (deepfake detection)
+        precision = precision_score(targets, predictions, average=average, zero_division=0)
+        recall = recall_score(targets, predictions, average=average, zero_division=0)
+        f1 = f1_score(targets, predictions, average=average, zero_division=0)
+        
+        return {
+            'precision': precision * 100,  # Convert to percentage
+            'recall': recall * 100,
+            'f1_score': f1 * 100
+        }
 
 
 class EarlyStopper:
@@ -108,8 +147,6 @@ class EarlyStopper:
         return False
 
 
-def accuracy(output, target, topk=(1,)):
-    """ Computes the precision@k for the specified values of k """
 def accuracy(output, target, topk=(1,)):
     """ Computes the precision@k for the specified values of k """
     maxk = max(topk)
@@ -150,8 +187,6 @@ def plot_examples(params, train_data):
 
     for i, idx in enumerate(rand_idx):
         img, label = train_data[idx]
-        # the image tensor's range is not between 0 and 1,
-        # so we have to temporarily scale the tensor values into range 0 and 1 to prevent error.
         img = (img - img.min()) / (img.max() - img.min())
         img_class = train_data.classes[label]
 
@@ -167,10 +202,8 @@ def pred_classes(params, model, test_data):
     actual_labels = []
 
     model.eval()
-    with torch.no_grad():  # We are using no_grad instead of inference_mode for better compatibility
+    with torch.no_grad():
         for images, labels in torch.utils.data.DataLoader(dataset=test_data, batch_size=params.test_batch_size):
-            # images, labels = images.cuda(), labels.cuda()
-            # new
             device = next(model.parameters()).device
             images, labels = images.to(device), labels.to(device)
             

@@ -1,5 +1,5 @@
 """
-Homomorphic Evaluation of DCT-CryptoNets
+Homomorphic Evaluation of DCT-CryptoNets with F1 Score Tracking
 
 author: Arjun Roy <roy208@purdue.edu>
 """
@@ -25,7 +25,7 @@ from concrete.fhe import Configuration
 # Local modules
 from io_utils import model_dict, parse_args
 from data.datamgr import SimpleDataManager
-from utils import accuracy, AverageMeter, BaselineTrain
+from utils import accuracy, AverageMeter, BaselineTrain, MetricsTracker
 
 
 use_gpu = torch.cuda.is_available()
@@ -35,12 +35,14 @@ cifar_path = "./cifardataset"
 
 
 @torch.no_grad()
-def test_unencrypted(model, criterion, data_loader):
+def test_unencrypted(model, criterion, data_loader, num_classes=2):
     model.eval()
     with torch.no_grad():
         loss_avg = AverageMeter()
         top1 = AverageMeter()
         top5 = AverageMeter()
+        metrics_tracker = MetricsTracker(num_classes=num_classes)
+        
         for batch_idx, (data, target) in enumerate(tqdm(data_loader)):
             if use_gpu:
                 data, target = data.cuda(), target.cuda()
@@ -48,32 +50,44 @@ def test_unencrypted(model, criterion, data_loader):
             f, output = model.forward(data)
             loss = criterion(output, target)
 
+            # Get predictions for metrics
+            _, pred = output.topk(1, 1, True, True)
+            pred = pred.squeeze()
+
             # measure accuracy and record loss
             prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
             loss_avg.update(loss.data.item(), data.size(0))
             top1.update(prec1.item(), data.size(0))
             top5.update(prec5.item(), data.size(0))
+            metrics_tracker.update(pred, target)
 
-    return top1, top5, loss_avg
+        metric_results = metrics_tracker.compute_metrics(average='binary' if num_classes == 2 else 'macro')
+
+    return top1, top5, loss_avg, metric_results
 
 
 @torch.no_grad()
 def test_encrypted(params, model, data_loader, fhe_mode, cls):
     top1 = AverageMeter()
     top5 = AverageMeter()
+    metrics_tracker = MetricsTracker(num_classes=params.num_classes)
 
     # Iterate over the test batches and accumulate predictions and ground truth labels in a vector
     for data, target in tqdm(data_loader):
-        data = data.numpy()
+        data_np = data.numpy()
 
         # Quantize the inputs and cast to appropriate data type
-        encoder_output = model.forward(data, fhe=fhe_mode)
+        encoder_output = model.forward(data_np, fhe=fhe_mode)
 
         # Run through clear-text classifier
         try:
             output = cls.forward(torch.from_numpy(encoder_output).flatten().float())
         except:
             output = cls.forward(torch.from_numpy(encoder_output).float())
+
+        # Get predictions for metrics
+        _, pred = output.topk(1, 0, True, True) if params.test_batch_size == 1 else output.topk(1, 1, True, True)
+        pred = pred.squeeze()
 
         # Measure accuracy and record loss
         if params.test_batch_size == 1:
@@ -82,8 +96,10 @@ def test_encrypted(params, model, data_loader, fhe_mode, cls):
             prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
         top1.update(prec1.item(), data.shape[0])
         top5.update(prec5.item(), data.shape[0])
+        metrics_tracker.update(pred, target)
 
-    return top1, top5
+    metric_results = metrics_tracker.compute_metrics(average='binary' if params.num_classes == 2 else 'macro')
+    return top1, top5, metric_results
 
 
 def main():
@@ -275,7 +291,10 @@ def main():
         checkpoint = torch.load(params.checkpoint_path, map_location=device)
         model.load_state_dict(checkpoint['state'])
         model.module.best_prec1_val = checkpoint["prec1"]
-        print(f'Loaded checkpoint {params.checkpoint_path} ({model.module.best_prec1_val:.3f}% Top-1 Acc. @ epoch {checkpoint["epoch"]})')
+        if 'f1_score' in checkpoint:
+            print(f'Loaded checkpoint {params.checkpoint_path} ({model.module.best_prec1_val:.3f}% Top-1 Acc., {checkpoint["f1_score"]:.3f}% F1 @ epoch {checkpoint["epoch"]})')
+        else:
+            print(f'Loaded checkpoint {params.checkpoint_path} ({model.module.best_prec1_val:.3f}% Top-1 Acc. @ epoch {checkpoint["epoch"]})')
     else:
         print("WARNING: No checkpoint loaded. Using random weights (for testing only)")
         print("Results will NOT be meaningful!")
@@ -350,17 +369,21 @@ def main():
     else:
         model.cpu()
 
-    top1_val, top5_val, loss_val = test_unencrypted(model, criterion, val_loader)
-    top1_test, top5_test, loss_test = test_unencrypted(model, criterion, test_loader)
+    top1_val, top5_val, loss_val, val_metrics = test_unencrypted(model, criterion, val_loader, num_classes=params.num_classes)
+    top1_test, top5_test, loss_test, test_metrics = test_unencrypted(model, criterion, test_loader, num_classes=params.num_classes)
+    
     print(f'[Validation] Top-1 Acc: {top1_val.avg:.3f}% | Top-5 Acc: {top5_val.avg:.3f}% | Avg. Loss: {loss_val.avg:.3f}')
+    print(f'[Validation] Precision: {val_metrics["precision"]:.3f}% | Recall: {val_metrics["recall"]:.3f}% | F1 Score: {val_metrics["f1_score"]:.3f}%')
+    
     print(f'[Test] Top-1 Acc: {top1_test.avg:.3f}% | Top-5 Acc: {top5_test.avg:.3f}% | Avg. Loss: {loss_test.avg:.3f}')
+    print(f'[Test] Precision: {test_metrics["precision"]:.3f}% | Recall: {test_metrics["recall"]:.3f}% | F1 Score: {test_metrics["f1_score"]:.3f}%')
 
     # Run validation set if testing accuracy of simulator
     model.to(device)
     if params.fhe_mode == 'simulate':
         t = time.time()
         print(f"\nRunning ENCRYPTED validation inference in {params.fhe_mode.upper()} mode on a subset of {params.test_subset} images...")
-        top1_val, top5_val = test_encrypted(
+        top1_val, top5_val, val_metrics_enc = test_encrypted(
             params,
             q_module,
             val_loader,
@@ -372,11 +395,13 @@ def main():
         time_per_inference = elapsed_time / params.test_subset
         print(f'[Validation] Top-1 Acc: {top1_val.avg:.3f}% | Top-5 Acc: {top5_val.avg:.3f}% | '
               f'Time per inference in FHE: {time_per_inference:.2f}')
+        print(f'[Validation] Precision: {val_metrics_enc["precision"]:.3f}% | '
+              f'Recall: {val_metrics_enc["recall"]:.3f}% | F1 Score: {val_metrics_enc["f1_score"]:.3f}%')
 
     # Run test set
     t = time.time()
     print(f"\nRunning ENCRYPTED test inference in {params.fhe_mode.upper()} mode on a subset of {params.test_subset} images...")
-    top1_test, top5_test = test_encrypted(
+    top1_test, top5_test, test_metrics_enc = test_encrypted(
         params,
         q_module,
         test_loader,
@@ -388,83 +413,8 @@ def main():
     time_per_inference = elapsed_time / params.test_subset
     print(f'[Test] Top-1 Acc: {top1_test.avg:.3f}% | Top-5 Acc: {top5_test.avg:.3f}% | '
           f'Time per inference in FHE: {time_per_inference:.2f}')
-
-    # Run reliability analysis over a range of 20 random datasets subsets
-    if params.reliability_test is not None and params.fhe_mode == 'simulate':
-        print('\n============ Encrypted Reliability Analysis ============')
-        if torch.cuda.is_available():
-            model.cuda()
-        else:
-            model.cpu()
-        # Test on multiple random states
-        random_states = [x for x in range(27, 29)]
-        top1_plain = []
-        top5_plain = []
-        top1_enc = []
-        top5_enc = []
-        for rstate in random_states:
-            print(f"\n\nRunning ENCRYPTED test inference on subset of {params.test_subset} with random state {rstate}...")
-            if params.dataset == 'miniImagenet' and params.dct_status:
-                test_loader, _ = base_datamgr_val.get_data_loader_dct(
-                    base_file,
-                    aug=False,
-                    filter_size=params.filter_size,
-                    subset=params.test_subset,
-                    channels=params.channels,
-                    random_state=rstate)
-            elif params.dataset == 'miniImagenet' and not params.dct_status:
-                test_loader, _ = base_datamgr_val.get_data_loader(
-                    base_file,
-                    aug=False,
-                    subset=params.test_subset,
-                    random_state=rstate)
-            else:
-                _, test_idx = train_test_split(np.arange(num_test), test_size=params.test_subset, random_state=rstate)
-                test_sampler = SubsetRandomSampler(test_idx)
-
-                test_loader = torch.utils.data.DataLoader(
-                    testset,
-                    batch_size=params.test_batch_size,
-                    shuffle=False,
-                    sampler=test_sampler,
-                )
-
-            # Plaintext accuracy on test-set
-            if torch.cuda.is_available():
-                model.cuda()
-                print("Running on GPU")
-            else:
-                model.cpu()
-                print("Running on CPU")
-            top1_p, top5_p, loss_p = test_unencrypted(model, criterion, test_loader)
-            top1_plain.append(top1_p.avg)
-            top5_plain.append(top5_p.avg)
-            print(f'[Test] UNENCRYPTED Top-1 Acc: {top1_p.avg:.3f}% | Top-5 Acc: {top5_p.avg:.3f}% | Avg. Loss: {loss_p.avg:.3f}')
-
-            # Encrypted accuracy on test-set
-            model.to(device)
-            t = time.time()
-            top1_e, top5_e = test_encrypted(
-                params,
-                q_module,
-                test_loader,
-                params.fhe_mode,
-                cls=model.module.classifier
-            )
-            elapsed_time = time.time() - t
-            time.sleep(1)
-            time_per_inference = elapsed_time / params.test_subset
-            print(f'[Test] ENCRYPTED Top-1 Acc: {top1_e.avg:.3f}% | Top-5 Acc: {top5_e.avg:.3f}% | '
-                  f'Time per inference in FHE: {time_per_inference:.2f}')
-            top1_enc.append(top1_e.avg)
-            top5_enc.append(top5_e.avg)
-
-        print(f'\n--------Encrypted Reliability Analysis Results--------')
-        print(f'Unencrypted top1 acc: {top1_plain}')
-        print(f'Unencrypted top5 acc: {top5_plain}')
-        print(f'Encrypted top1 acc: {top1_enc}')
-        print(f'Encrypted top5 acc: {top5_enc}')
-        print(f'--------------------------------------------------------')
+    print(f'[Test] Precision: {test_metrics_enc["precision"]:.3f}% | '
+          f'Recall: {test_metrics_enc["recall"]:.3f}% | F1 Score: {test_metrics_enc["f1_score"]:.3f}%')
 
     print('Done')
     return

@@ -1,7 +1,8 @@
 """
-Training DCT-CryptoNets
+Training DCT-CryptoNets with F1 Score Tracking
 
 author: Arjun Roy <roy208@purdue.edu>
+Modified to include precision, recall, and F1 score metrics
 """
 from __future__ import print_function
 
@@ -36,13 +37,16 @@ def clear_memory():
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
 
+
 def train(params, model, optimizer, criterion, train_loader, val_loader, start_epoch, stop_epoch, early_stopping):
 
     # Grab highest val accuracy if resuming training
     if model.module.best_prec1_val is None:
         best_val_acc = 0
+        best_val_f1 = 0
     else:
         best_val_acc = model.module.best_prec1_val
+        best_val_f1 = 0
 
     # Train epochs
     for epoch in range(start_epoch, stop_epoch):
@@ -52,10 +56,12 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
         train_loss = AverageMeter()
         top1 = AverageMeter()
         top5 = AverageMeter()
+        train_metrics = MetricsTracker(num_classes=params.num_classes)
 
         val_loss = AverageMeter()
         top1_val = AverageMeter()
         top5_val = AverageMeter()
+        val_metrics = MetricsTracker(num_classes=params.num_classes)
 
         params = adjust_learning_rate(params, optimizer, epoch)
         print(f'\nEpoch: [{epoch + 1} | {stop_epoch}] LR: {get_lr(optimizer)}')
@@ -67,11 +73,16 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
             f, output = model.forward(data)
             loss = criterion(output, target)
 
-            # Measure accuracy and record loss
+            # Get predictions for metrics
+            _, pred = output.topk(1, 1, True, True)
+            pred = pred.squeeze()
+            
+            # Update metrics
             prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
             train_loss.update(loss.data.item(), data.size(0))
             top1.update(prec1.item(), data.size(0))
             top5.update(prec5.item(), data.size(0))
+            train_metrics.update(pred, target)
 
             # Compute gradient and perform optimizer step
             optimizer.zero_grad()
@@ -87,12 +98,19 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
                 print(f'[{batch_idx}/{len(train_loader)}] Avg. Train Loss: {train_loss.avg:.3f} | '
                       f'Top-1 Acc: {top1.avg:.3f}% | Top-5 Acc: {top5.avg:.3f}%')
 
+        # Compute training metrics
+        train_metric_results = train_metrics.compute_metrics(average='binary' if params.num_classes == 2 else 'macro')
+        print(f'Training Metrics - Precision: {train_metric_results["precision"]:.3f}% | '
+              f'Recall: {train_metric_results["recall"]:.3f}% | '
+              f'F1 Score: {train_metric_results["f1_score"]:.3f}%')
+
         if (epoch % params.save_freq == 0) or (epoch == stop_epoch - 1):
             torch.save({
                 'epoch': epoch,
                 'state': model.state_dict(),
                 'prec1': top1.avg,
                 'prec5': top5.avg,
+                'f1_score': train_metric_results["f1_score"],
                 'optimizer': optimizer.state_dict(),
             }, os.path.join(params.checkpoint_dir, '{:d}.tar'.format(epoch)))
 
@@ -110,28 +128,43 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
                 f, output = model.forward(data)
                 loss = criterion(output, target)
 
+                # Get predictions for metrics
+                _, pred = output.topk(1, 1, True, True)
+                pred = pred.squeeze()
+
                 # Measure accuracy and record loss
                 prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
                 val_loss.update(loss.data.item(), data.size(0))
                 top1_val.update(prec1.item(), data.size(0))
                 top5_val.update(prec5.item(), data.size(0))
+                val_metrics.update(pred, target)
 
-            print(f'Avg. Val Loss: {val_loss.avg:.3f} | Top-1 Acc: {top1_val.avg:.3f}% | Top-5 Acc: {top5_val.avg:.3f}%')
+            # Compute validation metrics
+            val_metric_results = val_metrics.compute_metrics(average='binary' if params.num_classes == 2 else 'macro')
+            print(f'Validation - Loss: {val_loss.avg:.3f} | Top-1 Acc: {top1_val.avg:.3f}% | Top-5 Acc: {top5_val.avg:.3f}%')
+            print(f'Validation Metrics - Precision: {val_metric_results["precision"]:.3f}% | '
+                  f'Recall: {val_metric_results["recall"]:.3f}% | '
+                  f'F1 Score: {val_metric_results["f1_score"]:.3f}%')
 
         torch.cuda.empty_cache()
         validation_time = time.time() - t
         print(f'Time for validation epoch {epoch}: {validation_time/60:.2f} minutes')
 
-        # Save best model
-        if top1_val.avg > best_val_acc:
+        # Save best model based on F1 score (better for imbalanced datasets)
+        if val_metric_results["f1_score"] > best_val_f1:
+            best_val_f1 = val_metric_results["f1_score"]
             best_val_acc = top1_val.avg
             torch.save({
                 'epoch': epoch,
                 'state': model.state_dict(),
                 'prec1': top1_val.avg,
                 'prec5': top5_val.avg,
+                'f1_score': val_metric_results["f1_score"],
+                'precision': val_metric_results["precision"],
+                'recall': val_metric_results["recall"],
                 'optimizer': optimizer.state_dict(),
             }, os.path.join(params.checkpoint_dir, 'best.tar'))
+            print(f'★ New best model saved! F1: {best_val_f1:.3f}% | Acc: {best_val_acc:.3f}%')
 
         # Early stopping
         if early_stopping(val_loss.avg):
@@ -146,13 +179,15 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
     return model
 
 
-def test(model, criterion, val_loader, test_loader):
+def test(model, criterion, val_loader, test_loader, num_classes=2):
 
     model.eval()
     with torch.no_grad():
         val_loss = 0
         correct = 0
         total = 0
+        val_metrics = MetricsTracker(num_classes=num_classes)
+        
         for batch_idx, (data, target) in enumerate(val_loader):
             if use_gpu:
                 data, target = data.cuda(), target.cuda()
@@ -163,14 +198,21 @@ def test(model, criterion, val_loader, test_loader):
             _, predicted = torch.max(output.data, 1)
             total += target.size(0)
             correct += predicted.eq(target.data).cpu().sum()
+            val_metrics.update(predicted, target)
 
         avg_val_loss = val_loss / (batch_idx + 1)
         val_acc = 100. * (correct / total)
-        print(f'Avg. Val Loss: {avg_val_loss:.3f} | Acc: {correct}/{total} ({val_acc:.2f}%)')
+        val_metric_results = val_metrics.compute_metrics(average='binary' if num_classes == 2 else 'macro')
+        print(f'Validation - Loss: {avg_val_loss:.3f} | Acc: {correct}/{total} ({val_acc:.2f}%)')
+        print(f'Validation Metrics - Precision: {val_metric_results["precision"]:.3f}% | '
+              f'Recall: {val_metric_results["recall"]:.3f}% | '
+              f'F1 Score: {val_metric_results["f1_score"]:.3f}%')
 
         test_loss = 0
         correct = 0
         total = 0
+        test_metrics = MetricsTracker(num_classes=num_classes)
+        
         for data, target in test_loader:
             if use_gpu:
                 data, target = data.cuda(), target.cuda()
@@ -181,12 +223,17 @@ def test(model, criterion, val_loader, test_loader):
             _, predicted = torch.max(output.data, 1)
             total += target.size(0)
             correct += predicted.eq(target.data).cpu().sum()
+            test_metrics.update(predicted, target)
 
         avg_test_loss = test_loss / (batch_idx + 1)
         test_acc = 100. * (correct / total)
-        print(f'Avg. Test Loss: {avg_test_loss:.3f} | Acc: {correct}/{total} ({test_acc:.2f}%)')
+        test_metric_results = test_metrics.compute_metrics(average='binary' if num_classes == 2 else 'macro')
+        print(f'Test - Loss: {avg_test_loss:.3f} | Acc: {correct}/{total} ({test_acc:.2f}%)')
+        print(f'Test Metrics - Precision: {test_metric_results["precision"]:.3f}% | '
+              f'Recall: {test_metric_results["recall"]:.3f}% | '
+              f'F1 Score: {test_metric_results["f1_score"]:.3f}%')
 
-    return val_acc, test_acc
+    return val_acc, test_acc, val_metric_results["f1_score"], test_metric_results["f1_score"]
 
 
 def main():
@@ -214,8 +261,8 @@ def main():
         os.makedirs(params.checkpoint_dir)
 
     # Data manager and transformations
-    normalize_param = None  # Use default normalization param for ImageNet, miniImageNet and Imagenette in datamgr
-    jitter_param = None     # Use default jitter param for ImageNet, miniImageNet and Imagenette in datamgr
+    normalize_param = None
+    jitter_param = None
     if not params.dct_status and params.dataset == 'cifar10':
         normalize_param = dict(
             mean=[0.4914, 0.4822, 0.4465],
@@ -393,7 +440,6 @@ def main():
     )
 
     if params.resume:
-        # Load checkpoint.
         print('\nResuming from checkpoint...')
         checkpoint = torch.load(params.resume)
         start_epoch = checkpoint['epoch']
@@ -432,7 +478,7 @@ def main():
     if use_gpu:
         model.cuda()
         criterion.cuda()
-    test(model, criterion, val_loader, test_loader)
+    test(model, criterion, val_loader, test_loader, num_classes=params.num_classes)
     if params.dataset == 'cifar10' or params.dataset == 'Imagenette':
         pred_classes(params, model, testset)
     print('Done')
