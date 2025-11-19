@@ -87,7 +87,7 @@ def test_encrypted(params, model, data_loader, fhe_mode, cls):
 
         # Get predictions for metrics
         _, pred = output.topk(1, 0, True, True) if params.test_batch_size == 1 else output.topk(1, 1, True, True)
-        pred = pred.squeeze()
+        pred = pred.view(-1)
 
         # Measure accuracy and record loss
         if params.test_batch_size == 1:
