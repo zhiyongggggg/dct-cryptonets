@@ -30,3 +30,5 @@ __pycache__/
 # 3rd party library loggers
 **/.artifacts
 **/.pytest_cache
+
+/all_datasets

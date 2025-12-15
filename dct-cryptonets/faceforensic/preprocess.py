@@ -164,10 +164,33 @@ def main():
     Main function to run the frame extraction.
     """
     # Configuration
-    DATASET_ROOT = "/hdd/zlim135/Git/dct-cryptonets/all_dataset/FaceForensic/preprocessed"
-    OUTPUT_ROOT = "/hdd/zlim135/Git/dct-cryptonets/all_dataset/FaceForensic/postprocessed"
+    DATASET_ROOT = "~/Git/dct-cryptonets/all_datasets/FaceForensics"
+    OUTPUT_ROOT = "~/Git/dct-cryptonets/all_datasets/postprocess"
     FRAME_INTERVAL = 30  # Extract 1 frame every 30 frames (~1 fps for 30fps video)
     VAL_SPLIT = 0.2      # 20% of videos for validation
+
+def main():
+    DATASET_ROOT = os.path.expanduser(
+        "~/Git/dct-cryptonets/all_datasets/FaceForensics"
+    )
+    OUTPUT_ROOT = os.path.expanduser(
+        "~/Git/dct-cryptonets/all_datasets/postprocess"
+    )
+
+    FRAME_INTERVAL = 30
+    VAL_SPLIT = 0.2
+
+    extractor = VideoFrameExtractor(
+        dataset_root=DATASET_ROOT,
+        output_root=OUTPUT_ROOT,
+        frame_interval=FRAME_INTERVAL,
+        val_split=VAL_SPLIT
+    )
+
+    extractor.process_all()
+
+if __name__ == "__main__":
+    main()
     
     # Create extractor and process videos
     extractor = VideoFrameExtractor(

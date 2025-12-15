@@ -5,7 +5,7 @@
 
 set -e
 eval "$(conda shell.bash hook)"
-conda activate zlim135env_gpu_dctcryptonets
+conda activate dct-cryptonets
 export BREVITAS_IGNORE_MISSING_KEYS=1
 
 # ====== GPU Configuration ======
@@ -22,8 +22,8 @@ export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 # General parameters
 gpu=0
 num_classes=2
-dataset_path=/hdd/zlim135/Git/dct-cryptonets/all_dataset/FaceForensic/postprocessed/
-checkpoint_path=/hdd/zlim135/Git/dct-cryptonets/checkpoint_dir/FaceForensic/postprocessed/best.tar
+dataset_path=/home/zhiyong/Git/dct-cryptonets/all_datasets/postprocess/
+#checkpoint_path=/home/zhiyong/Git/dct-cryptonets/checkpoint_dir/FaceForensic/postprocessed/best.tar
 bit_width=4
 
 # Homomorphic encryption parameters
