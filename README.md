@@ -120,3 +120,9 @@ compile_brevitas_qat_model(
 Parts of this code were built upon [DCTNet](https://github.com/kaix90/DCTNet), [PT-MAP-sf](https://github.com/xiangyu8/PT-MAP-sf), and [Concrete-ML](https://github.com/zama-ai/concrete-ml).
 
 We would also like to thank the Zama Concrete-ML team and the community on [FHE Discord](https://fhe.org/community.html) for their support and interesting discussions!
+
+
+## Set up
+1. Clone this repository
+2. Install conda and use provided env.yml file to install all dependencies (Note that the concrete-ml library installed is specifically for GPU-enabled version), if there is a need to change to CPU-enabled, refer to this [link](https://docs.zama.org/concrete-ml/guides/using_gpu)
+3. Run the setup.sh script which will download the FaceForensics dataset and unzip it in the correct folder. Note that this will use around 14GB of memory space.
