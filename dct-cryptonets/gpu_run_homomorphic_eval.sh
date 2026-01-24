@@ -27,10 +27,10 @@ dataset_path=/home/zhiyong/Git/dct-cryptonets/all_datasets/postprocess/
 bit_width=4
 
 # Homomorphic encryption parameters
-fhe_mode=simulate          # Use 'execute' for actual FHE with GPU benefits
+fhe_mode=execute          # Use 'execute' for actual FHE with GPU benefits
 calib_batch_size=100
 test_batch_size=1          # Keep at 1 for 'execute' mode
-test_subset=10             # Start small to test GPU
+test_subset=1             # Start small to test GPU
 rounding_threshold_bits=6
 n_bits=5
 p_error=0.01
@@ -38,15 +38,15 @@ reliability_test=False     # Set to False for initial GPU testing
 verbose=True
 
 # DCT parameters
-dct_status=N
+dct_status=Y
 dct_pattern=default
 
 # ResNet18 ImageNet with DCT
 dataset=FaceForensic
-model=ResNet18qat
-image_size=224
-channels=3
-filter_size=8
+model=ResNet20qat #Resnet18qat
+image_size=224 #224
+channels=64
+filter_size=8 #8
 
 echo "=========================================="
 echo "GPU Configuration"
