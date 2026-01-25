@@ -18,7 +18,7 @@ def parse_args(script):
 
     default_group = parser.add_argument_group('Default arguments')
     default_group.add_argument('--dataset', default='cifar10',
-                               choices=['cifar10', 'ImageNet'],
+                               choices=['cifar10', 'ImageNet', 'FaceForensic'],
                                help='Choose image dataset')
     default_group.add_argument('--model', default='ResNet18qat',
                                choices=['ResNet20', 'ResNet20qat',           # DCT-CryptoNets ResNet20
