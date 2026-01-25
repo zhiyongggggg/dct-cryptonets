@@ -313,6 +313,15 @@ def main():
         val_loader = torch.utils.data.DataLoader(valset, batch_size=params.test_batch_size, shuffle=False, **data_loader_params)
         test_loader = torch.utils.data.DataLoader(testset, batch_size=params.test_batch_size, shuffle=False, **data_loader_params)
 
+    elif params.dataset == 'FaceForensic':
+        trainset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'train'), transform=train_transform)
+        valset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'val'), transform=test_transform)
+        testset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'val'), transform=test_transform)
+
+        train_loader = torch.utils.data.DataLoader(trainset, batch_size=params.batch_size, shuffle=True, **data_loader_params)
+        val_loader = torch.utils.data.DataLoader(valset, batch_size=params.test_batch_size, shuffle=False, **data_loader_params)
+        test_loader = torch.utils.data.DataLoader(testset, batch_size=params.test_batch_size, shuffle=False, **data_loader_params)
+
     # Model
     if 'qat' in params.model:
         model_arg_dict = {

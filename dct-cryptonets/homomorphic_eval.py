@@ -203,6 +203,24 @@ def main():
         val_loader = torch.utils.data.DataLoader(valset, batch_size=params.test_batch_size, shuffle=False, sampler=test_sampler)
         test_loader = torch.utils.data.DataLoader(testset, batch_size=params.test_batch_size, shuffle=False, sampler=test_sampler)
 
+    elif params.dataset == 'FaceForensic':
+        trainset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'train'), transform=test_transform)
+        calibset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'val'), transform=test_transform)
+        valset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'val'), transform=test_transform)
+        testset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'val'), transform=test_transform)
+
+        num_train = len(trainset)
+        train_idx, val_idx = train_test_split(np.arange(num_train), test_size=params.test_subset, random_state=42)
+        val_sampler = SubsetRandomSampler(val_idx)
+
+        num_test = len(testset)
+        _, test_idx = train_test_split(np.arange(num_test), test_size=params.test_subset, random_state=42)
+        test_sampler = SubsetRandomSampler(test_idx)
+
+        calib_loader = torch.utils.data.DataLoader(calibset, batch_size=params.calib_batch_size, shuffle=False)
+        val_loader = torch.utils.data.DataLoader(valset, batch_size=params.test_batch_size, sampler=val_sampler)
+        test_loader = torch.utils.data.DataLoader(testset, batch_size=params.test_batch_size, sampler=test_sampler)
+
     # Model
     if 'qat' in params.model:
         model_arg_dict = {
