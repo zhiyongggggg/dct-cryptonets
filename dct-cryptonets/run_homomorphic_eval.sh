@@ -11,19 +11,19 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 # ------ User Arguments ------
 # General parameters
 gpu=0
-model=ResNet18qat
-dataset=ImageNet
-num_classes=1000
-dataset_path=/home/datasets/imagenet/imagenet2012/
-checkpoint_path=/home/arjunroy/Repos/dct-cryptonets/checkpoints/ImageNet/ResNet18qat_dct/filter_8_pattern_default_input_64_56_56_bitwidth_4/best.tar
+model=ResNet20qat
+dataset=ImageNette
+num_classes=10
+dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/ImageNette
+checkpoint_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint
 bit_width=4                 # QAT trained bit-width. Set to 4 if cifar10, mini-ImageNet, Imagenette; otherwise 5 if ImageNet
 
 # Homomorphic encryption parameters (Dataset batch/subset sizes are dependent on this)
-fhe_mode=simulate
-calib_batch_size=100
-test_batch_size=50          # Set to 1 if fhe_mode=execute
-test_subset=200             # Set to 1 if fhe_mode=execute; ~200 if fhe_mode=simulate and running reliability_test
-rounding_threshold_bits=7   # Set to 6 if running cifar10, mini-ImageNet, Imagenette; otherwise 7 if ImageNet
+fhe_mode=execute
+calib_batch_size=5
+test_batch_size=1          # Set to 1 if fhe_mode=execute
+test_subset=1             # Set to 1 if fhe_mode=execute; ~200 if fhe_mode=simulate and running reliability_test
+rounding_threshold_bits=6   # Set to 6 if running cifar10, mini-ImageNet, Imagenette; otherwise 7 if ImageNet
 n_bits=5
 p_error=0.01
 reliability_test=True
@@ -33,7 +33,7 @@ verbose=True
 dct_status=Y                # Set to N if running RGB-based model
 image_size=56               # Set to 224 if running RGB-based model
 channels=64                 # Set to 3 if running RGB-based model
-filter_size=8               # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
+filter_size=4               # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
 dct_pattern=default
 
 

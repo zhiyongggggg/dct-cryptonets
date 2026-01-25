@@ -11,17 +11,17 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 # ------ User Arguments ------
 # General parameters
 gpu=0                  # Multi-GPU training is not currently supported with QAT Brevitas
-model=ResNet18qat
+model=ResNet20qat
 dataset=ImageNet
 num_classes=1000
-dataset_path=/home/datasets/imagenet/imagenet2012/
-checkpoint_dir=/home/arjunroy/Desktop/
+dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/ImageNette 
+checkpoint_dir=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint
 resume=
 
 # Training parameters
-epochs=10
-batch_size=256
-test_batch_size=512
+epochs=2
+batch_size=128
+test_batch_size=256
 num_workers=4
 optimizer=adam
 lr=0.001
@@ -38,7 +38,7 @@ bit_width=4             # QAT trained bit-width. Set to 4 if cifar10, mini-Image
 dct_status=Y            # Set to N if running RGB-based network
 image_size=56           # Set to 224 if running RGB-based network
 channels=64             # Set to 3 if running RGB-based network
-filter_size=8           # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
+filter_size=4           # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
 dct_pattern=default
 
 
