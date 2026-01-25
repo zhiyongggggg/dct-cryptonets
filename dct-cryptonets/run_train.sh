@@ -12,14 +12,14 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 # General parameters
 gpu=0                  # Multi-GPU training is not currently supported with QAT Brevitas
 model=ResNet18qat
-dataset=ImageNet
-num_classes=10
-dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/ImageNette/imagenette2 
-checkpoint_dir=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint
+dataset=FaceForensic
+num_classes=2
+dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/FaceForensic 
+checkpoint_dir=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/faceforensic
 resume=
 
 # Training parameters
-epochs=1
+epochs=3
 batch_size=128
 test_batch_size=256
 num_workers=4
