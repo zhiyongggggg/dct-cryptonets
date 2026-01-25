@@ -109,7 +109,14 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
                 loss = criterion(output, target)
 
                 # Measure accuracy and record loss
-                prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
+                max_k = min(5, output.shape[1]) # Check number of classes in current output
+
+                if max_k < 5:
+                    # Use a comma after prec1 to correctly unpack the single-element list returned by accuracy
+                    prec1, = accuracy(output.data, target.data, topk=(1,))
+                    prec5 = torch.zeros(1) # Placeholder for Top-5 accuracy
+                else:
+                    prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
                 val_loss.update(loss.data.item(), data.size(0))
                 top1_val.update(prec1.item(), data.size(0))
                 top5_val.update(prec5.item(), data.size(0))
