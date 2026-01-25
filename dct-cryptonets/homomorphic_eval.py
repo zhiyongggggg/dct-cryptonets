@@ -47,7 +47,12 @@ def test_unencrypted(model, criterion, data_loader):
             loss = criterion(output, target)
 
             # measure accuracy and record loss
-            prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
+            max_k = min(5, output.shape[1])
+            if max_k < 5:
+                prec1, = accuracy(output.data, target.data, topk=(1,))
+                prec5 = torch.zeros(1)
+            else:
+                prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
             loss_avg.update(loss.data.item(), data.size(0))
             top1.update(prec1.item(), data.size(0))
             top5.update(prec5.item(), data.size(0))
@@ -74,10 +79,20 @@ def test_encrypted(params, model, data_loader, fhe_mode, cls):
             output = cls.forward(torch.from_numpy(encoder_output).float())
 
         # Measure accuracy and record loss
+        max_k = min(5, output.size(-1)) 
+
         if params.test_batch_size == 1:
-            prec1, prec5 = accuracy(output.data.view(1, -1), target.data, topk=(1, 5))
+            input_data = output.data.view(1, -1)
         else:
-            prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
+            input_data = output.data
+
+        # Conditional accuracy calculation for 2-class datasets
+        if max_k < 5:
+            prec1, = accuracy(input_data, target.data, topk=(1,))
+            prec5 = torch.zeros(1) # Zero placeholder for your AverageMeter
+        else:
+            prec1, prec5 = accuracy(input_data, target.data, topk=(1, 5))
+
         top1.update(prec1.item(), data.shape[0])
         top5.update(prec5.item(), data.shape[0])
 

@@ -60,7 +60,13 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
             loss = criterion(output, target)
 
             # Measure accuracy and record loss
-            prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
+            # Replace the existing accuracy calls (lines 63 and 100) with:
+            max_k = min(5, params.num_classes)
+            if max_k < 5:
+                prec1, = accuracy(output.data, target.data, topk=(1,))
+                prec5 = torch.zeros(1) # Placeholder to avoid breaking AverageMeter
+            else:
+                prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
             train_loss.update(loss.data.item(), data.size(0))
             top1.update(prec1.item(), data.size(0))
             top5.update(prec5.item(), data.size(0))
