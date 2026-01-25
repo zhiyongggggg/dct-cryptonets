@@ -11,11 +11,11 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 # ------ User Arguments ------
 # General parameters
 gpu=0
-model=ResNet20qat
-dataset=ImageNette
+model=ResNet18qat
+dataset=ImageNet
 num_classes=10
-dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/ImageNette
-checkpoint_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint
+dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/ImageNette/imagenette2
+checkpoint_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/best.tar
 bit_width=4                 # QAT trained bit-width. Set to 4 if cifar10, mini-ImageNet, Imagenette; otherwise 5 if ImageNet
 
 # Homomorphic encryption parameters (Dataset batch/subset sizes are dependent on this)
@@ -32,8 +32,8 @@ verbose=True
 # DCT parameters
 dct_status=Y                # Set to N if running RGB-based model
 image_size=56               # Set to 224 if running RGB-based model
-channels=64                 # Set to 3 if running RGB-based model
-filter_size=4               # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
+channels=24                 # Set to 3 if running RGB-based model
+filter_size=8               # Set to 4 if running ResNet20 model; otherwise 8 if ResNet18 model
 dct_pattern=default
 
 
