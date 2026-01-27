@@ -12,17 +12,24 @@ export BREVITAS_IGNORE_MISSING_KEYS=1
 # General parameters
 gpu=0
 model=ResNet18qat
-dataset=ImageNet
-num_classes=10
-dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/ImageNette/imagenette2
-checkpoint_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/best.tar
+dataset=FaceForensic
+num_classes=2
+dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/FaceForensic
+checkpoint_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/faceforensic/best.tar
 bit_width=4                 # QAT trained bit-width. Set to 4 if cifar10, mini-ImageNet, Imagenette; otherwise 5 if ImageNet
 
 # Homomorphic encryption parameters (Dataset batch/subset sizes are dependent on this)
-fhe_mode=execute
-calib_batch_size=5
-test_batch_size=1          # Set to 1 if fhe_mode=execute
-test_subset=1             # Set to 1 if fhe_mode=execute; ~200 if fhe_mode=simulate and running reliability_test
+# FaceForensic Execute Mode Params
+#fhe_mode=execute
+#calib_batch_size=5
+#test_batch_size=1          # Set to 1 if fhe_mode=execute
+#test_subset=1             # Set to 1 if fhe_mode=execute; ~200 if fhe_mode=simulate and running reliability_test
+
+# Simulate Mode Param
+fhe_mode=simulate
+calib_batch_size=100
+test_batch_size=50
+test_subset=200
 rounding_threshold_bits=6   # Set to 6 if running cifar10, mini-ImageNet, Imagenette; otherwise 7 if ImageNet
 n_bits=5
 p_error=0.01
