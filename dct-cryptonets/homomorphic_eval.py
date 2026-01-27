@@ -431,8 +431,9 @@ def main():
             top1_plain.append(top1_p.avg)
             top5_plain.append(top5_p.avg)
             elapsed_time = time.time() - t
+            time_per_inference_plain = elapsed_time / params.test_subset
             time.sleep(1)
-            print(f'[Test] UNENCRYPTED Top-1 Acc: {top1_p.avg:.3f}% | Top-5 Acc: {top5_p.avg:.3f}% | Avg. Loss: {loss_p.avg:.3f} | Time per inference in FHE: {time_per_inference:.2f}')
+            print(f'[Test] UNENCRYPTED Top-1 Acc: {top1_p.avg:.3f}% | Top-5 Acc: {top5_p.avg:.3f}% | Avg. Loss: {loss_p.avg:.3f} | Time per inference: {time_per_inference_plain:.2f}')
 
             # Encrypted accuracy on test-set
             model.to(device)
