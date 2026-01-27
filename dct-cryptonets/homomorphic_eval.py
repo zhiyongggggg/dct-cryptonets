@@ -421,10 +421,13 @@ def main():
 
             # Plaintext accuracy on test-set
             model.cuda()
+            t = time.time()
             top1_p, top5_p, loss_p = test_unencrypted(model, criterion, test_loader)
             top1_plain.append(top1_p.avg)
             top5_plain.append(top5_p.avg)
-            print(f'[Test] UNENCRYPTED Top-1 Acc: {top1_p.avg:.3f}% | Top-5 Acc: {top5_p.avg:.3f}% | Avg. Loss: {loss_p.avg:.3f}')
+            elapsed_time = time.time() - t
+            time.sleep(1)
+            print(f'[Test] UNENCRYPTED Top-1 Acc: {top1_p.avg:.3f}% | Top-5 Acc: {top5_p.avg:.3f}% | Avg. Loss: {loss_p.avg:.3f} | Time per inference in FHE: {time_per_inference:.2f}')
 
             # Encrypted accuracy on test-set
             model.to(device)
