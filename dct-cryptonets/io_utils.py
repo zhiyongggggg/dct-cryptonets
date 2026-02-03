@@ -3,6 +3,8 @@ from models import backbone
 
 
 model_dict = dict(
+    Resnet50=backbone.ResNet50,
+    ResNet50qat=backbone.ResNet50QAT,
     ResNet20=backbone.ResNet20,
     ResNet20qat=backbone.ResNet20QAT,
     ResNet18=backbone.ResNet18,
