@@ -22,7 +22,8 @@ def parse_args(script):
                                help='Choose image dataset')
     default_group.add_argument('--model', default='ResNet18qat',
                                choices=['ResNet20', 'ResNet20qat',           # DCT-CryptoNets ResNet20
-                                        'ResNet18', 'ResNet18qat'],          # DCT-CryptoNets ResNet18
+                                        'ResNet18', 'ResNet18qat',
+					'ResNet50', 'ResNet50qat'],          # DCT-CryptoNets ResNet18
                                help='Choose model architecture')
     default_group.add_argument('--num_classes', default=10, type=int, help='Number of prediction classes')
     default_group.add_argument('--dataset_path', metavar='PATH', help='Path to directory with dataset')
