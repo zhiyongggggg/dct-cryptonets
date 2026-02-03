@@ -279,10 +279,14 @@ def main():
 
     # Load checkpoint
     print('\nLoading checkpoint...')
-    checkpoint = torch.load(params.checkpoint_path, map_location=device)
-    model.load_state_dict(checkpoint['state'])
-    model.module.best_prec1_val = checkpoint["prec1"]
-    print(f'Loaded checkpoint {params.checkpoint_path} ({model.module.best_prec1_val:.3f}% Top-1 Acc. @ epoch {checkpoint["epoch"]})')
+    if params.checkpoint_path and os.path.exists(params.checkpoint_path):
+        checkpoint = torch.load(params.checkpoint_path, map_location=device)
+        model.load_state_dict(checkpoint['state'])
+        model.module.best_prec1_val = checkpoint["prec1"]
+        print(f'Loaded checkpoint {params.checkpoint_path} ({model.module.best_prec1_val:.3f}% Top-1 Acc. @ epoch {checkpoint["epoch"]})')
+    else:
+        print("WARNING: No checkpoint loaded. Using random weights")
+        print("Results will NOT be meaningful!")
 
     # Create post-trained quantization calibration data which is first batch of train data
     for data, _ in calib_loader:
