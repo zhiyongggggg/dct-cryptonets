@@ -67,6 +67,7 @@ def test_encrypted(params, model, data_loader, fhe_mode, cls):
 
     # Iterate over the test batches and accumulate predictions and ground truth labels in a vector
     for data, target in tqdm(data_loader):
+        print(f"\n[FHE EXECUTE MODE] Selected Image for Deepfake Detection: {paths[0]}")
         data = data.numpy()
 
         # Quantize the inputs and cast to appropriate data type
