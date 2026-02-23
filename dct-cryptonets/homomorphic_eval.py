@@ -228,11 +228,11 @@ def main():
 
         # Create samplers for subsets
         num_calib = len(calibset)
-        _, calib_idx = train_test_split(np.arange(num_calib), test_size=params.calib_batch_size, random_state=42)
+        _, calib_idx = train_test_split(np.arange(num_calib), test_size=params.calib_batch_size, random_state=35)
         calib_sampler = SubsetRandomSampler(calib_idx)
 
         num_test = len(testset)
-        _, test_idx = train_test_split(np.arange(num_test), test_size=params.test_subset, random_state=42)
+        _, test_idx = train_test_split(np.arange(num_test), test_size=params.test_subset, random_state=35)
         test_sampler = SubsetRandomSampler(test_idx)
         val_sampler = SubsetRandomSampler(test_idx)
 
