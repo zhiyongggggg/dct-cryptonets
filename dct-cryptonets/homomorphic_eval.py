@@ -25,7 +25,7 @@ from concrete.fhe import Configuration
 # Local modules
 from io_utils import model_dict, parse_args
 from data.datamgr import SimpleDataManager
-from utils import accuracy, AverageMeter, BaselineTrain
+from utils import accuracy, AverageMeter, F1Meter, BaselineTrain
 
 
 use_gpu = torch.cuda.is_available()
@@ -39,11 +39,12 @@ def test_unencrypted(model, criterion, data_loader):
         loss_avg = AverageMeter()
         top1 = AverageMeter()
         top5 = AverageMeter()
+        f1 = F1Meter()
         for batch_idx, (data, target) in enumerate(tqdm(data_loader)):
             if use_gpu:
                 data, target = data.cuda(), target.cuda()
             data, target = Variable(data), Variable(target)
-            f, output = model.forward(data)
+            feat, output = model.forward(data)
             loss = criterion(output, target)
 
             # measure accuracy and record loss
@@ -56,14 +57,16 @@ def test_unencrypted(model, criterion, data_loader):
             loss_avg.update(loss.data.item(), data.size(0))
             top1.update(prec1.item(), data.size(0))
             top5.update(prec5.item(), data.size(0))
+            f1.update(output.data, target.data)
 
-    return top1, top5, loss_avg
+    return top1, top5, loss_avg, f1
 
 
 @torch.no_grad()
 def test_encrypted(params, model, data_loader, fhe_mode, cls):
     top1 = AverageMeter()
     top5 = AverageMeter()
+    f1 = F1Meter()
 
     # Iterate over the test batches and accumulate predictions and ground truth labels in a vector
     for data, target in tqdm(data_loader):
@@ -79,7 +82,7 @@ def test_encrypted(params, model, data_loader, fhe_mode, cls):
             output = cls.forward(torch.from_numpy(encoder_output).float())
 
         # Measure accuracy and record loss
-        max_k = min(5, output.size(-1)) 
+        max_k = min(5, output.size(-1))
 
         if params.test_batch_size == 1:
             input_data = output.data.view(1, -1)
@@ -89,14 +92,15 @@ def test_encrypted(params, model, data_loader, fhe_mode, cls):
         # Conditional accuracy calculation for 2-class datasets
         if max_k < 5:
             prec1, = accuracy(input_data, target.data, topk=(1,))
-            prec5 = torch.zeros(1) # Zero placeholder for your AverageMeter
+            prec5 = torch.zeros(1)
         else:
             prec1, prec5 = accuracy(input_data, target.data, topk=(1, 5))
 
         top1.update(prec1.item(), data.shape[0])
         top5.update(prec5.item(), data.shape[0])
+        f1.update(input_data, target.data)
 
-    return top1, top5
+    return top1, top5, f1
 
 
 def main():
@@ -111,8 +115,8 @@ def main():
         quantization_type = 'PTQ'
 
     # Data manager and transformations
-    normalize_param = None  # Use default normalization param for ImageNet, miniImageNet and Imagenette in datamgr
-    jitter_param = None     # Use default jitter param for ImageNet, miniImageNet and Imagenette in datamgr
+    normalize_param = None
+    jitter_param = None
     if not params.dct_status and params.dataset == 'cifar10':
         normalize_param = dict(
             mean=[0.4914, 0.4822, 0.4465],
@@ -220,13 +224,10 @@ def main():
 
     elif params.dataset == 'FaceForensic':
         trainset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'train'), transform=test_transform)
-        # Use train set for calibration
         calibset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'train'), transform=test_transform)
-        # Use val set for validation and testing
         valset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'val'), transform=test_transform)
         testset = datasets.ImageFolder(root=os.path.join(params.dataset_path, 'val'), transform=test_transform)
 
-        # Create samplers for subsets
         num_calib = len(calibset)
         _, calib_idx = train_test_split(np.arange(num_calib), test_size=params.calib_batch_size, random_state=35)
         calib_sampler = SubsetRandomSampler(calib_idx)
@@ -236,7 +237,6 @@ def main():
         test_sampler = SubsetRandomSampler(test_idx)
         val_sampler = SubsetRandomSampler(test_idx)
 
-        # Create data loaders
         calib_loader = torch.utils.data.DataLoader(calibset, batch_size=params.calib_batch_size, sampler=calib_sampler)
         val_loader = torch.utils.data.DataLoader(valset, batch_size=params.test_batch_size, sampler=val_sampler)
         test_loader = torch.utils.data.DataLoader(testset, batch_size=params.test_batch_size, sampler=test_sampler)
@@ -261,8 +261,6 @@ def main():
     )
     print(f'Number Parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}')
     print('\n============Model Summary============')
-    # Ignore parameter count calculated from torchinfo.summary as it doesn't play well with Brevitas QAT
-    # Used solely for understanding network topology and tensor dimension changes
     if params.dct_status:
         summary(
             model.module.feature.to('cpu'),
@@ -297,11 +295,8 @@ def main():
     print(f'\nCompiling FHE Model (this can take up to 10 minutes for larger networks)...')
     model.to(device)
     configuration = Configuration(
-        # To enable displaying progressbar
         show_progress=False,
-        # To enable showing tags in the progressbar (does not work in notebooks)
         progress_tag=True,
-        # To give a title to the progressbar
         progress_title='Evaluation: ',
     )
     t = time.time()
@@ -310,7 +305,7 @@ def main():
             model.module.feature,
             calib_data,
             rounding_threshold_bits=params.rounding_threshold_bits,
-            # rounding_threshold_bits={"n_bits": params.rounding_threshold_bits, "method": "approximate"},  # makes things go brrr
+            # rounding_threshold_bits={"n_bits": params.rounding_threshold_bits, "method": "approximate"},
             n_bits=params.n_bits,
             p_error=params.p_error,
             configuration=configuration,
@@ -352,17 +347,19 @@ def main():
     # Test model in (unencrypted) non-FHE mode
     print(f'\nRunning UNENCRYPTED model on a subset of {params.test_subset} images...')
     model.cuda()
-    top1_val, top5_val, loss_val = test_unencrypted(model, criterion, val_loader)
-    top1_test, top5_test, loss_test = test_unencrypted(model, criterion, test_loader)
-    print(f'[Validation] Top-1 Acc: {top1_val.avg:.3f}% | Top-5 Acc: {top5_val.avg:.3f}% | Avg. Loss: {loss_val.avg:.3f}')
-    print(f'[Test] Top-1 Acc: {top1_test.avg:.3f}% | Top-5 Acc: {top5_test.avg:.3f}% | Avg. Loss: {loss_test.avg:.3f}')
+    top1_val, top5_val, loss_val, f1_val = test_unencrypted(model, criterion, val_loader)
+    top1_test, top5_test, loss_test, f1_test = test_unencrypted(model, criterion, test_loader)
+    print(f'[Validation] Top-1 Acc: {top1_val.avg:.3f}% | Top-5 Acc: {top5_val.avg:.3f}% | '
+          f'Avg. Loss: {loss_val.avg:.3f} | F1: {f1_val.f1:.3f}%')
+    print(f'[Test] Top-1 Acc: {top1_test.avg:.3f}% | Top-5 Acc: {top5_test.avg:.3f}% | '
+          f'Avg. Loss: {loss_test.avg:.3f} | F1: {f1_test.f1:.3f}%')
 
     # Run validation set if testing accuracy of simulator
     model.to(device)
     if params.fhe_mode == 'simulate':
         t = time.time()
         print(f"\nRunning ENCRYPTED validation inference in {params.fhe_mode.upper()} mode on a subset of {params.test_subset} images...")
-        top1_val, top5_val = test_encrypted(
+        top1_val, top5_val, f1_val = test_encrypted(
             params,
             q_module,
             val_loader,
@@ -373,12 +370,12 @@ def main():
         time.sleep(1)
         time_per_inference = elapsed_time / params.test_subset
         print(f'[Validation] Top-1 Acc: {top1_val.avg:.3f}% | Top-5 Acc: {top5_val.avg:.3f}% | '
-              f'Time per inference in FHE: {time_per_inference:.2f}')
+              f'F1: {f1_val.f1:.3f}% | Time per inference in FHE: {time_per_inference:.2f}')
 
     # Run test set
     t = time.time()
     print(f"\nRunning ENCRYPTED test inference in {params.fhe_mode.upper()} mode on a subset of {params.test_subset} images...")
-    top1_test, top5_test = test_encrypted(
+    top1_test, top5_test, f1_test = test_encrypted(
         params,
         q_module,
         test_loader,
@@ -389,18 +386,19 @@ def main():
     time.sleep(1)
     time_per_inference = elapsed_time / params.test_subset
     print(f'[Test] Top-1 Acc: {top1_test.avg:.3f}% | Top-5 Acc: {top5_test.avg:.3f}% | '
-          f'Time per inference in FHE: {time_per_inference:.2f}')
+          f'F1: {f1_test.f1:.3f}% | Time per inference in FHE: {time_per_inference:.2f}')
 
     # Run reliability analysis over a range of 20 random datasets subsets
     if params.reliability_test is not None and params.fhe_mode == 'simulate':
         print('\n============ Encrypted Reliability Analysis ============')
         model.cuda()
-        # Test on multiple random states
         random_states = [x for x in range(27, 37)]
         top1_plain = []
         top5_plain = []
+        f1_plain = []
         top1_enc = []
         top5_enc = []
+        f1_enc = []
         for rstate in random_states:
             print(f"\n\nRunning ENCRYPTED test inference on subset of {params.test_subset} with random state {rstate}...")
             if params.dataset == 'miniImagenet' and params.dct_status:
@@ -420,7 +418,6 @@ def main():
             else:
                 _, test_idx = train_test_split(np.arange(num_test), test_size=params.test_subset, random_state=rstate)
                 test_sampler = SubsetRandomSampler(test_idx)
-
                 test_loader = torch.utils.data.DataLoader(
                     testset,
                     batch_size=params.test_batch_size,
@@ -431,18 +428,20 @@ def main():
             # Plaintext accuracy on test-set
             model.cuda()
             t = time.time()
-            top1_p, top5_p, loss_p = test_unencrypted(model, criterion, test_loader)
+            top1_p, top5_p, loss_p, f1_p = test_unencrypted(model, criterion, test_loader)
             top1_plain.append(top1_p.avg)
             top5_plain.append(top5_p.avg)
+            f1_plain.append(f1_p.f1)
             elapsed_time = time.time() - t
             time_per_inference_plain = elapsed_time / params.test_subset
             time.sleep(1)
-            print(f'[Test] UNENCRYPTED Top-1 Acc: {top1_p.avg:.3f}% | Top-5 Acc: {top5_p.avg:.3f}% | Avg. Loss: {loss_p.avg:.3f} | Time per inference: {time_per_inference_plain:.2f}')
+            print(f'[Test] UNENCRYPTED Top-1 Acc: {top1_p.avg:.3f}% | Top-5 Acc: {top5_p.avg:.3f}% | '
+                  f'Avg. Loss: {loss_p.avg:.3f} | F1: {f1_p.f1:.3f}% | Time per inference: {time_per_inference_plain:.2f}')
 
             # Encrypted accuracy on test-set
             model.to(device)
             t = time.time()
-            top1_e, top5_e = test_encrypted(
+            top1_e, top5_e, f1_e = test_encrypted(
                 params,
                 q_module,
                 test_loader,
@@ -453,15 +452,18 @@ def main():
             time.sleep(1)
             time_per_inference = elapsed_time / params.test_subset
             print(f'[Test] ENCRYPTED Top-1 Acc: {top1_e.avg:.3f}% | Top-5 Acc: {top5_e.avg:.3f}% | '
-                  f'Time per inference in FHE: {time_per_inference:.2f}')
+                  f'F1: {f1_e.f1:.3f}% | Time per inference in FHE: {time_per_inference:.2f}')
             top1_enc.append(top1_e.avg)
             top5_enc.append(top5_e.avg)
+            f1_enc.append(f1_e.f1)
 
         print(f'\n--------Encrypted Reliability Analysis Results--------')
         print(f'Unencrypted top1 acc: {top1_plain}')
         print(f'Unencrypted top5 acc: {top5_plain}')
-        print(f'Encrypted top1 acc: {top1_enc}')
-        print(f'Encrypted top5 acc: {top5_enc}')
+        print(f'Unencrypted F1:       {f1_plain}')
+        print(f'Encrypted top1 acc:   {top1_enc}')
+        print(f'Encrypted top5 acc:   {top5_enc}')
+        print(f'Encrypted F1:         {f1_enc}')
         print(f'--------------------------------------------------------')
 
     print('Done')
