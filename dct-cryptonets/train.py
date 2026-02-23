@@ -48,6 +48,7 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
         val_loss = AverageMeter()
         top1_val = AverageMeter()
         top5_val = AverageMeter()
+        f1_val = F1Meter()
 
         params = adjust_learning_rate(params, optimizer, epoch)
         print(f'\nEpoch: [{epoch + 1} | {stop_epoch}] LR: {get_lr(optimizer)}')
@@ -60,11 +61,10 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
             loss = criterion(output, target)
 
             # Measure accuracy and record loss
-            # Replace the existing accuracy calls (lines 63 and 100) with:
             max_k = min(5, params.num_classes)
             if max_k < 5:
                 prec1, = accuracy(output.data, target.data, topk=(1,))
-                prec5 = torch.zeros(1) # Placeholder to avoid breaking AverageMeter
+                prec5 = torch.zeros(1)
             else:
                 prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
             train_loss.update(loss.data.item(), data.size(0))
@@ -108,20 +108,19 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
                 f, output = model.forward(data)
                 loss = criterion(output, target)
 
-                # Measure accuracy and record loss
-                max_k = min(5, output.shape[1]) # Check number of classes in current output
-
+                max_k = min(5, output.shape[1])
                 if max_k < 5:
-                    # Use a comma after prec1 to correctly unpack the single-element list returned by accuracy
                     prec1, = accuracy(output.data, target.data, topk=(1,))
-                    prec5 = torch.zeros(1) # Placeholder for Top-5 accuracy
+                    prec5 = torch.zeros(1)
                 else:
                     prec1, prec5 = accuracy(output.data, target.data, topk=(1, 5))
                 val_loss.update(loss.data.item(), data.size(0))
                 top1_val.update(prec1.item(), data.size(0))
                 top5_val.update(prec5.item(), data.size(0))
+                f1_val.update(output.data, target.data)
 
-            print(f'Avg. Val Loss: {val_loss.avg:.3f} | Top-1 Acc: {top1_val.avg:.3f}% | Top-5 Acc: {top5_val.avg:.3f}%')
+            print(f'Avg. Val Loss: {val_loss.avg:.3f} | Top-1 Acc: {top1_val.avg:.3f}% | '
+                  f'Top-5 Acc: {top5_val.avg:.3f}% | F1: {f1_val.f1:.3f}%')
 
         torch.cuda.empty_cache()
         validation_time = time.time() - t
@@ -147,6 +146,7 @@ def train(params, model, optimizer, criterion, train_loader, val_loader, start_e
         val_loss.reset()
         top1_val.reset()
         top5_val.reset()
+        f1_val.reset()
 
     return model
 
@@ -158,6 +158,7 @@ def test(model, criterion, val_loader, test_loader):
         val_loss = 0
         correct = 0
         total = 0
+        f1_meter_val = F1Meter()
         for batch_idx, (data, target) in enumerate(val_loader):
             if use_gpu:
                 data, target = data.cuda(), target.cuda()
@@ -168,15 +169,18 @@ def test(model, criterion, val_loader, test_loader):
             _, predicted = torch.max(output.data, 1)
             total += target.size(0)
             correct += predicted.eq(target.data).cpu().sum()
+            f1_meter_val.update(output.data, target.data)
 
         avg_val_loss = val_loss / (batch_idx + 1)
         val_acc = 100. * (correct / total)
-        print(f'Avg. Val Loss: {avg_val_loss:.3f} | Acc: {correct}/{total} ({val_acc:.2f}%)')
+        print(f'Avg. Val Loss: {avg_val_loss:.3f} | Acc: {correct}/{total} ({val_acc:.2f}%) | '
+              f'F1: {f1_meter_val.f1:.3f}%')
 
         test_loss = 0
         correct = 0
         total = 0
-        for data, target in test_loader:
+        f1_meter_test = F1Meter()
+        for batch_idx, (data, target) in enumerate(test_loader):
             if use_gpu:
                 data, target = data.cuda(), target.cuda()
             data, target = Variable(data), Variable(target)
@@ -186,10 +190,12 @@ def test(model, criterion, val_loader, test_loader):
             _, predicted = torch.max(output.data, 1)
             total += target.size(0)
             correct += predicted.eq(target.data).cpu().sum()
+            f1_meter_test.update(output.data, target.data)
 
         avg_test_loss = test_loss / (batch_idx + 1)
         test_acc = 100. * (correct / total)
-        print(f'Avg. Test Loss: {avg_test_loss:.3f} | Acc: {correct}/{total} ({test_acc:.2f}%)')
+        print(f'Avg. Test Loss: {avg_test_loss:.3f} | Acc: {correct}/{total} ({test_acc:.2f}%) | '
+              f'F1: {f1_meter_test.f1:.3f}%')
 
     return val_acc, test_acc
 
@@ -218,8 +224,8 @@ def main():
         os.makedirs(params.checkpoint_dir)
 
     # Data manager and transformations
-    normalize_param = None  # Use default normalization param for ImageNet, miniImageNet and Imagenette in datamgr
-    jitter_param = None     # Use default jitter param for ImageNet, miniImageNet and Imagenette in datamgr
+    normalize_param = None
+    jitter_param = None
     if not params.dct_status and params.dataset == 'cifar10':
         normalize_param = dict(
             mean=[0.4914, 0.4822, 0.4465],
@@ -311,7 +317,7 @@ def main():
             test_loader, testset = test_datamgr.get_data_loader_dct(test_file, aug=False, filter_size=params.filter_size, channels=params.channels)
         else:
             base_datamgr = SimpleDataManager(params.image_size, batch_size=params.batch_size)
-            train_loader, trainset = base_datamgr.get_data_loader(base_file , aug=params.train_aug)
+            train_loader, trainset = base_datamgr.get_data_loader(base_file, aug=params.train_aug)
             base_datamgr_val = SimpleDataManager(params.image_size, batch_size=params.test_batch_size)
             val_loader, valset = base_datamgr_val.get_data_loader(base_file, aug=False)
             test_datamgr = SimpleDataManager(params.image_size, batch_size=params.test_batch_size)
@@ -355,8 +361,6 @@ def main():
     )
     print(f'Number Parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad)}')
     print('\n============Model Summary============')
-    # Ignore parameter count calculated from torchinfo.summary as it doesn't play well with Brevitas QAT
-    # Used solely for understanding network topology and tensor dimension changes
     if params.dct_status:
         summary(
             model.module.feature.to('cpu'),
@@ -397,7 +401,6 @@ def main():
     )
 
     if params.resume:
-        # Load checkpoint.
         print('\nResuming from checkpoint...')
         checkpoint = torch.load(params.resume)
         start_epoch = checkpoint['epoch']

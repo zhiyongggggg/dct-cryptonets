@@ -8,8 +8,7 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from sklearn.metrics import confusion_matrix
-
+from sklearn.metrics import confusion_matrix, f1_score
 
 class BaselineTrain(nn.Module):
     def __init__(self, model_func, num_class, loss_type='softmax'):
@@ -92,7 +91,27 @@ class EarlyStopper:
             if self.counter >= self.patience:
                 return True
         return False
+    
+class F1Meter:
+    """Accumulates predictions and targets to compute binary F1 at the end."""
+    def __init__(self):
+        self.reset()
 
+    def reset(self):
+        self.preds = []
+        self.targets = []
+
+    def update(self, output, target):
+        """output: logits or scores tensor, target: ground-truth tensor."""
+        preds = output.argmax(dim=1).cpu().numpy()
+        self.preds.extend(preds.tolist())
+        self.targets.extend(target.cpu().numpy().tolist())
+
+    @property
+    def f1(self):
+        if not self.preds:
+            return 0.0
+        return f1_score(self.targets, self.preds, average='binary') * 100.0
 
 def accuracy(output, target, topk=(1,)):
     """ Computes the precision@k for the specified values of k """
