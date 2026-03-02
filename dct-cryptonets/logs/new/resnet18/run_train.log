@@ -1,0 +1,340 @@
+-----General parameters-----
+model=ResNet18qat
+dataset=FaceForensic
+num_classes=2
+dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/FaceForensic
+checkpoint_dir=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/faceforensic/resnet18_qat_dct
+resume=
+-----Training parameters-----
+epochs=5
+batch_size=128
+test_batch_size=256
+num_workers=4
+optimizer=adam
+lr=0.001
+weight_decay=1e-5
+grad_clip_value=0.1
+dropout=0.2
+schedule=[5, 10, 10]
+checkpoint_save_freq=5
+bit_width=4
+-----DCT parameters-----
+dct_status=Y
+image_size=56
+filter_size=8
+dct_pattern=default
+channels=24
+
+Using GPU: True
+
+Checkpoint dir: /home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/faceforensic/resnet18_qat_dct
+Number Parameters: 11169696
+
+============Model Summary============
+=============================================================================================================================
+Layer (type:depth-idx)                                                      Output Shape              Param #
+=============================================================================================================================
+ResNetQDCT                                                                  [1, 512]                  --
+├─Sequential: 1-1                                                           [1, 512]                  --
+│    └─QuantIdentity: 2-1                                                   [1, 24, 56, 56]           --
+│    │    └─ActQuantProxyFromInjector: 3-1                                  [1, 24, 56, 56]           --
+│    │    └─ActQuantProxyFromInjector: 3-2                                  [1, 24, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─QuantIdentity: 2-3                                                   --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-4                                  --                        (recursive)
+│    └─QuantConv2d: 2-4                                                     [1, 64, 56, 56]           --
+│    │    └─ActQuantProxyFromInjector: 3-5                                  [1, 24, 56, 56]           --
+│    │    └─WeightQuantProxyFromInjector: 3-6                               [64, 24, 1, 1]            1,536
+│    │    └─ActQuantProxyFromInjector: 3-7                                  [1, 64, 56, 56]           --
+│    └─BatchNorm2d: 2-5                                                     [1, 64, 56, 56]           128
+│    └─QuantIdentity: 2-6                                                   [1, 64, 56, 56]           --
+│    │    └─ActQuantProxyFromInjector: 3-8                                  [1, 64, 56, 56]           --
+│    │    └─ActQuantProxyFromInjector: 3-9                                  [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─QuantIdentity: 2-8                                                   --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-11                                 --                        (recursive)
+│    └─SimpleQBlock: 2-9                                                    [1, 64, 56, 56]           36,994
+│    │    └─QuantConv2d: 3-12                                               [1, 64, 56, 56]           36,864
+│    │    └─BatchNorm2d: 3-13                                               [1, 64, 56, 56]           128
+│    │    └─QuantReLU: 3-14                                                 [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-15                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-16                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-17                                               [1, 64, 56, 56]           36,864
+│    │    └─BatchNorm2d: 3-18                                               [1, 64, 56, 56]           128
+│    │    └─QuantIdentity: 3-19                                             [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-15                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-21                                             --                        (recursive)
+│    │    └─QuantReLU: 3-22                                                 [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-15                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-24                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-16                                                   [1, 64, 56, 56]           36,994
+│    │    └─QuantConv2d: 3-25                                               [1, 64, 56, 56]           36,864
+│    │    └─BatchNorm2d: 3-26                                               [1, 64, 56, 56]           128
+│    │    └─QuantReLU: 3-27                                                 [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-22                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-29                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-30                                               [1, 64, 56, 56]           36,864
+│    │    └─BatchNorm2d: 3-31                                               [1, 64, 56, 56]           128
+│    │    └─QuantIdentity: 3-32                                             [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-22                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-34                                             --                        (recursive)
+│    │    └─QuantReLU: 3-35                                                 [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-22                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-37                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-23                                                   [1, 128, 28, 28]          156,163
+│    │    └─QuantConv2d: 3-38                                               [1, 128, 28, 28]          73,728
+│    │    └─BatchNorm2d: 3-39                                               [1, 128, 28, 28]          256
+│    │    └─QuantReLU: 3-40                                                 [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-31                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-42                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-43                                               [1, 128, 28, 28]          147,456
+│    │    └─BatchNorm2d: 3-44                                               [1, 128, 28, 28]          256
+│    │    └─QuantIdentity: 3-45                                             [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-31                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-47                                             --                        (recursive)
+│    │    └─QuantConv2d: 3-48                                               [1, 128, 28, 28]          8,192
+│    │    └─BatchNorm2d: 3-49                                               [1, 128, 28, 28]          256
+│    │    └─QuantIdentity: 3-50                                             [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-31                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-52                                             --                        (recursive)
+│    │    └─QuantReLU: 3-53                                                 [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-31                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-55                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-32                                                   [1, 128, 28, 28]          147,714
+│    │    └─QuantConv2d: 3-56                                               [1, 128, 28, 28]          147,456
+│    │    └─BatchNorm2d: 3-57                                               [1, 128, 28, 28]          256
+│    │    └─QuantReLU: 3-58                                                 [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-38                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-60                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-61                                               [1, 128, 28, 28]          147,456
+│    │    └─BatchNorm2d: 3-62                                               [1, 128, 28, 28]          256
+│    │    └─QuantIdentity: 3-63                                             [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-38                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-65                                             --                        (recursive)
+│    │    └─QuantReLU: 3-66                                                 [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-38                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-68                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-39                                                   [1, 256, 14, 14]          623,619
+│    │    └─QuantConv2d: 3-69                                               [1, 256, 14, 14]          294,912
+│    │    └─BatchNorm2d: 3-70                                               [1, 256, 14, 14]          512
+│    │    └─QuantReLU: 3-71                                                 [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-47                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-73                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-74                                               [1, 256, 14, 14]          589,824
+│    │    └─BatchNorm2d: 3-75                                               [1, 256, 14, 14]          512
+│    │    └─QuantIdentity: 3-76                                             [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-47                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-78                                             --                        (recursive)
+│    │    └─QuantConv2d: 3-79                                               [1, 256, 14, 14]          32,768
+│    │    └─BatchNorm2d: 3-80                                               [1, 256, 14, 14]          512
+│    │    └─QuantIdentity: 3-81                                             [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-47                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-83                                             --                        (recursive)
+│    │    └─QuantReLU: 3-84                                                 [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-47                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-86                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-48                                                   [1, 256, 14, 14]          590,338
+│    │    └─QuantConv2d: 3-87                                               [1, 256, 14, 14]          589,824
+│    │    └─BatchNorm2d: 3-88                                               [1, 256, 14, 14]          512
+│    │    └─QuantReLU: 3-89                                                 [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-54                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-91                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-92                                               [1, 256, 14, 14]          589,824
+│    │    └─BatchNorm2d: 3-93                                               [1, 256, 14, 14]          512
+│    │    └─QuantIdentity: 3-94                                             [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-54                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-96                                             --                        (recursive)
+│    │    └─QuantReLU: 3-97                                                 [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-54                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-99                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-55                                                   [1, 512, 7, 7]            2,492,419
+│    │    └─QuantConv2d: 3-100                                              [1, 512, 7, 7]            1,179,648
+│    │    └─BatchNorm2d: 3-101                                              [1, 512, 7, 7]            1,024
+│    │    └─QuantReLU: 3-102                                                [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-63                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-104                                                --                        (recursive)
+│    │    └─QuantConv2d: 3-105                                              [1, 512, 7, 7]            2,359,296
+│    │    └─BatchNorm2d: 3-106                                              [1, 512, 7, 7]            1,024
+│    │    └─QuantIdentity: 3-107                                            [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-63                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-109                                            --                        (recursive)
+│    │    └─QuantConv2d: 3-110                                              [1, 512, 7, 7]            131,072
+│    │    └─BatchNorm2d: 3-111                                              [1, 512, 7, 7]            1,024
+│    │    └─QuantIdentity: 3-112                                            [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-63                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-114                                            --                        (recursive)
+│    │    └─QuantReLU: 3-115                                                [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-63                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-117                                                --                        (recursive)
+│    └─SimpleQBlock: 2-64                                                   [1, 512, 7, 7]            2,360,322
+│    │    └─QuantConv2d: 3-118                                              [1, 512, 7, 7]            2,359,296
+│    │    └─BatchNorm2d: 3-119                                              [1, 512, 7, 7]            1,024
+│    │    └─QuantReLU: 3-120                                                [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-70                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-122                                                --                        (recursive)
+│    │    └─QuantConv2d: 3-123                                              [1, 512, 7, 7]            2,359,296
+│    │    └─BatchNorm2d: 3-124                                              [1, 512, 7, 7]            1,024
+│    │    └─QuantIdentity: 3-125                                            [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-70                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-127                                            --                        (recursive)
+│    │    └─QuantReLU: 3-128                                                [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-70                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-130                                                --                        (recursive)
+│    └─AvgPool2d: 2-71                                                      [1, 512, 1, 1]            --
+│    └─QuantIdentity: 2-72                                                  [1, 512, 1, 1]            --
+│    │    └─ActQuantProxyFromInjector: 3-131                                [1, 512, 1, 1]            --
+│    │    └─ActQuantProxyFromInjector: 3-132                                [1, 512, 1, 1]            1
+│    └─Flatten: 2-73                                                        [1, 512]                  --
+=============================================================================================================================
+Total params: 17,613,233
+Trainable params: 17,613,233
+Non-trainable params: 0
+Total mult-adds (M): 0.01
+=============================================================================================================================
+Input size (MB): 0.30
+Forward/backward pass size (MB): 15.05
+Params size (MB): 0.04
+Estimated Total Size (MB): 15.39
+=============================================================================================================================
+
+Epoch: [1 | 5] LR: 0.001
+[0/264] Avg. Train Loss: 0.711 | Top-1 Acc: 57.031% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.772 | Top-1 Acc: 65.307% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.644 | Top-1 Acc: 69.944% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.578 | Top-1 Acc: 73.062% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.527 | Top-1 Acc: 75.744% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.495 | Top-1 Acc: 77.254% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.464 | Top-1 Acc: 78.707% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.442 | Top-1 Acc: 79.769% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.426 | Top-1 Acc: 80.510% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.410 | Top-1 Acc: 81.373% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.395 | Top-1 Acc: 82.121% | Top-5 Acc: 0.000%
+Time for training epoch 0: 10.15 minutes
+Avg. Val Loss: 0.210 | Top-1 Acc: 92.153% | Top-5 Acc: 0.000% | F1: 89.260%
+Time for validation epoch 0: 0.34 minutes
+
+Epoch: [2 | 5] LR: 0.001
+[0/264] Avg. Train Loss: 0.183 | Top-1 Acc: 92.188% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.259 | Top-1 Acc: 88.542% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.244 | Top-1 Acc: 89.269% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.238 | Top-1 Acc: 89.814% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.230 | Top-1 Acc: 90.201% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.222 | Top-1 Acc: 90.607% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.218 | Top-1 Acc: 90.854% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.215 | Top-1 Acc: 90.954% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.210 | Top-1 Acc: 91.216% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.206 | Top-1 Acc: 91.370% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.202 | Top-1 Acc: 91.568% | Top-5 Acc: 0.000%
+Time for training epoch 1: 2.78 minutes
+Avg. Val Loss: 0.326 | Top-1 Acc: 87.387% | Top-5 Acc: 0.000% | F1: 81.532%
+Time for validation epoch 1: 0.34 minutes
+
+Epoch: [3 | 5] LR: 0.001
+[0/264] Avg. Train Loss: 0.137 | Top-1 Acc: 94.531% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.164 | Top-1 Acc: 93.287% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.172 | Top-1 Acc: 93.072% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.170 | Top-1 Acc: 93.196% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.174 | Top-1 Acc: 93.043% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.170 | Top-1 Acc: 93.183% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.166 | Top-1 Acc: 93.232% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.164 | Top-1 Acc: 93.344% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.161 | Top-1 Acc: 93.473% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.159 | Top-1 Acc: 93.590% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.157 | Top-1 Acc: 93.633% | Top-5 Acc: 0.000%
+Time for training epoch 2: 1.66 minutes
+Avg. Val Loss: 0.039 | Top-1 Acc: 98.663% | Top-5 Acc: 0.000% | F1: 98.321%
+Time for validation epoch 2: 0.34 minutes
+
+Epoch: [4 | 5] LR: 0.001
+[0/264] Avg. Train Loss: 0.174 | Top-1 Acc: 92.969% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.138 | Top-1 Acc: 94.647% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.148 | Top-1 Acc: 93.912% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.143 | Top-1 Acc: 94.136% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.142 | Top-1 Acc: 94.182% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.140 | Top-1 Acc: 94.305% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.138 | Top-1 Acc: 94.377% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.137 | Top-1 Acc: 94.450% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.135 | Top-1 Acc: 94.546% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.132 | Top-1 Acc: 94.644% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.132 | Top-1 Acc: 94.675% | Top-5 Acc: 0.000%
+Time for training epoch 3: 1.63 minutes
+Avg. Val Loss: 0.057 | Top-1 Acc: 98.059% | Top-5 Acc: 0.000% | F1: 97.542%
+Time for validation epoch 3: 0.34 minutes
+
+Epoch: [5 | 5] LR: 0.0001
+[0/264] Avg. Train Loss: 0.132 | Top-1 Acc: 93.750% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.117 | Top-1 Acc: 95.544% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.111 | Top-1 Acc: 95.828% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.106 | Top-1 Acc: 95.985% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.104 | Top-1 Acc: 96.034% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.102 | Top-1 Acc: 96.046% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.103 | Top-1 Acc: 95.974% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.102 | Top-1 Acc: 95.974% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.101 | Top-1 Acc: 95.982% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.100 | Top-1 Acc: 96.054% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.099 | Top-1 Acc: 96.064% | Top-5 Acc: 0.000%
+Time for training epoch 4: 1.66 minutes
+Avg. Val Loss: 0.020 | Top-1 Acc: 99.488% | Top-5 Acc: 0.000% | F1: 99.369%
+Time for validation epoch 4: 0.34 minutes
+
+Testing on best model...
+Loaded best model /home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/faceforensic/resnet18_qat_dct/best.tar (epoch 4)
+Avg. Val Loss: 0.020 | Acc: 8558/8602 (99.49%) | F1: 99.369%
+Avg. Test Loss: 0.020 | Acc: 8558/8602 (99.49%) | F1: 99.369%
+Done

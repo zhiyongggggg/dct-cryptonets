@@ -1,0 +1,40 @@
+-----General parameters-----
+model=ResNet20qat
+dataset=FaceForensic
+num_classes=2
+dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/FaceForensic
+checkpoint_dir=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/faceforensic/resnet20_qat_dct
+resume=
+-----Training parameters-----
+epochs=5
+batch_size=128
+test_batch_size=256
+num_workers=4
+optimizer=adam
+lr=0.001
+weight_decay=1e-5
+grad_clip_value=0.1
+dropout=0.2
+schedule=[5, 10, 10]
+checkpoint_save_freq=5
+bit_width=4
+-----DCT parameters-----
+dct_status=Y
+image_size=56
+filter_size=8
+dct_pattern=default
+channels=24
+
+Using GPU: True
+
+Checkpoint dir: /home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/faceforensic/resnet20_qat_dct
+Traceback (most recent call last):
+  File "/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/train.py", line 451, in <module>
+    main()
+  File "/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/train.py", line 358, in main
+    model_dict[params.model](**model_arg_dict),
+  File "/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/models/backbone.py", line 458, in ResNet20QAT
+    model = ResNetQDCT(
+  File "/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/models/backbone.py", line 336, in __init__
+    net_perturbation = all_network_perturbations[f'{list_out_dims[0]}_{in_channels}_{img_size}']
+KeyError: '48_24_56'
