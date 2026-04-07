@@ -26,6 +26,7 @@ __pycache__/
 /results
 /lib
 dct-cryptonets/dataset
+dct-cryptonets/checkpoint
 all_datasets
 # 3rd party library loggers
 **/.artifacts

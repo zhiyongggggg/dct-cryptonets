@@ -1,0 +1,580 @@
+-----General parameters-----
+model=ResNet18qat
+dataset=FaceForensic
+num_classes=2
+dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/FaceForensic
+checkpoint_dir=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/faceforensic/resnet18_qat_dct_v2
+resume=
+-----Training parameters-----
+epochs=20
+batch_size=128
+test_batch_size=256
+num_workers=4
+optimizer=adam
+lr=0.001
+weight_decay=1e-5
+grad_clip_value=0.1
+dropout=0.2
+schedule=[5, 10, 10]
+checkpoint_save_freq=5
+bit_width=4
+-----DCT parameters-----
+dct_status=Y
+image_size=56
+filter_size=8
+dct_pattern=default
+channels=24
+
+Using GPU: True
+
+Checkpoint dir: /home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/faceforensic/resnet18_qat_dct_v2
+Number Parameters: 11169696
+
+============Model Summary============
+=============================================================================================================================
+Layer (type:depth-idx)                                                      Output Shape              Param #
+=============================================================================================================================
+ResNetQDCT                                                                  [1, 512]                  --
+├─Sequential: 1-1                                                           [1, 512]                  --
+│    └─QuantIdentity: 2-1                                                   [1, 24, 56, 56]           --
+│    │    └─ActQuantProxyFromInjector: 3-1                                  [1, 24, 56, 56]           --
+│    │    └─ActQuantProxyFromInjector: 3-2                                  [1, 24, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─QuantIdentity: 2-3                                                   --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-4                                  --                        (recursive)
+│    └─QuantConv2d: 2-4                                                     [1, 64, 56, 56]           --
+│    │    └─ActQuantProxyFromInjector: 3-5                                  [1, 24, 56, 56]           --
+│    │    └─WeightQuantProxyFromInjector: 3-6                               [64, 24, 1, 1]            1,536
+│    │    └─ActQuantProxyFromInjector: 3-7                                  [1, 64, 56, 56]           --
+│    └─BatchNorm2d: 2-5                                                     [1, 64, 56, 56]           128
+│    └─QuantIdentity: 2-6                                                   [1, 64, 56, 56]           --
+│    │    └─ActQuantProxyFromInjector: 3-8                                  [1, 64, 56, 56]           --
+│    │    └─ActQuantProxyFromInjector: 3-9                                  [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─QuantIdentity: 2-8                                                   --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-11                                 --                        (recursive)
+│    └─SimpleQBlock: 2-9                                                    [1, 64, 56, 56]           36,994
+│    │    └─QuantConv2d: 3-12                                               [1, 64, 56, 56]           36,864
+│    │    └─BatchNorm2d: 3-13                                               [1, 64, 56, 56]           128
+│    │    └─QuantReLU: 3-14                                                 [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-15                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-16                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-17                                               [1, 64, 56, 56]           36,864
+│    │    └─BatchNorm2d: 3-18                                               [1, 64, 56, 56]           128
+│    │    └─QuantIdentity: 3-19                                             [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-15                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-21                                             --                        (recursive)
+│    │    └─QuantReLU: 3-22                                                 [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-15                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-24                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-16                                                   [1, 64, 56, 56]           36,994
+│    │    └─QuantConv2d: 3-25                                               [1, 64, 56, 56]           36,864
+│    │    └─BatchNorm2d: 3-26                                               [1, 64, 56, 56]           128
+│    │    └─QuantReLU: 3-27                                                 [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-22                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-29                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-30                                               [1, 64, 56, 56]           36,864
+│    │    └─BatchNorm2d: 3-31                                               [1, 64, 56, 56]           128
+│    │    └─QuantIdentity: 3-32                                             [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-22                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-34                                             --                        (recursive)
+│    │    └─QuantReLU: 3-35                                                 [1, 64, 56, 56]           1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-22                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-37                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-23                                                   [1, 128, 28, 28]          156,163
+│    │    └─QuantConv2d: 3-38                                               [1, 128, 28, 28]          73,728
+│    │    └─BatchNorm2d: 3-39                                               [1, 128, 28, 28]          256
+│    │    └─QuantReLU: 3-40                                                 [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-31                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-42                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-43                                               [1, 128, 28, 28]          147,456
+│    │    └─BatchNorm2d: 3-44                                               [1, 128, 28, 28]          256
+│    │    └─QuantIdentity: 3-45                                             [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-31                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-47                                             --                        (recursive)
+│    │    └─QuantConv2d: 3-48                                               [1, 128, 28, 28]          8,192
+│    │    └─BatchNorm2d: 3-49                                               [1, 128, 28, 28]          256
+│    │    └─QuantIdentity: 3-50                                             [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-31                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-52                                             --                        (recursive)
+│    │    └─QuantReLU: 3-53                                                 [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-31                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-55                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-32                                                   [1, 128, 28, 28]          147,714
+│    │    └─QuantConv2d: 3-56                                               [1, 128, 28, 28]          147,456
+│    │    └─BatchNorm2d: 3-57                                               [1, 128, 28, 28]          256
+│    │    └─QuantReLU: 3-58                                                 [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-38                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-60                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-61                                               [1, 128, 28, 28]          147,456
+│    │    └─BatchNorm2d: 3-62                                               [1, 128, 28, 28]          256
+│    │    └─QuantIdentity: 3-63                                             [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-38                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-65                                             --                        (recursive)
+│    │    └─QuantReLU: 3-66                                                 [1, 128, 28, 28]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-38                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-68                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-39                                                   [1, 256, 14, 14]          623,619
+│    │    └─QuantConv2d: 3-69                                               [1, 256, 14, 14]          294,912
+│    │    └─BatchNorm2d: 3-70                                               [1, 256, 14, 14]          512
+│    │    └─QuantReLU: 3-71                                                 [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-47                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-73                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-74                                               [1, 256, 14, 14]          589,824
+│    │    └─BatchNorm2d: 3-75                                               [1, 256, 14, 14]          512
+│    │    └─QuantIdentity: 3-76                                             [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-47                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-78                                             --                        (recursive)
+│    │    └─QuantConv2d: 3-79                                               [1, 256, 14, 14]          32,768
+│    │    └─BatchNorm2d: 3-80                                               [1, 256, 14, 14]          512
+│    │    └─QuantIdentity: 3-81                                             [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-47                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-83                                             --                        (recursive)
+│    │    └─QuantReLU: 3-84                                                 [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-47                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-86                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-48                                                   [1, 256, 14, 14]          590,338
+│    │    └─QuantConv2d: 3-87                                               [1, 256, 14, 14]          589,824
+│    │    └─BatchNorm2d: 3-88                                               [1, 256, 14, 14]          512
+│    │    └─QuantReLU: 3-89                                                 [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-54                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-91                                                 --                        (recursive)
+│    │    └─QuantConv2d: 3-92                                               [1, 256, 14, 14]          589,824
+│    │    └─BatchNorm2d: 3-93                                               [1, 256, 14, 14]          512
+│    │    └─QuantIdentity: 3-94                                             [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-54                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-96                                             --                        (recursive)
+│    │    └─QuantReLU: 3-97                                                 [1, 256, 14, 14]          1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-54                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-99                                                 --                        (recursive)
+│    └─SimpleQBlock: 2-55                                                   [1, 512, 7, 7]            2,492,419
+│    │    └─QuantConv2d: 3-100                                              [1, 512, 7, 7]            1,179,648
+│    │    └─BatchNorm2d: 3-101                                              [1, 512, 7, 7]            1,024
+│    │    └─QuantReLU: 3-102                                                [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-63                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-104                                                --                        (recursive)
+│    │    └─QuantConv2d: 3-105                                              [1, 512, 7, 7]            2,359,296
+│    │    └─BatchNorm2d: 3-106                                              [1, 512, 7, 7]            1,024
+│    │    └─QuantIdentity: 3-107                                            [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-63                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-109                                            --                        (recursive)
+│    │    └─QuantConv2d: 3-110                                              [1, 512, 7, 7]            131,072
+│    │    └─BatchNorm2d: 3-111                                              [1, 512, 7, 7]            1,024
+│    │    └─QuantIdentity: 3-112                                            [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-63                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-114                                            --                        (recursive)
+│    │    └─QuantReLU: 3-115                                                [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-63                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-117                                                --                        (recursive)
+│    └─SimpleQBlock: 2-64                                                   [1, 512, 7, 7]            2,360,322
+│    │    └─QuantConv2d: 3-118                                              [1, 512, 7, 7]            2,359,296
+│    │    └─BatchNorm2d: 3-119                                              [1, 512, 7, 7]            1,024
+│    │    └─QuantReLU: 3-120                                                [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-70                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-122                                                --                        (recursive)
+│    │    └─QuantConv2d: 3-123                                              [1, 512, 7, 7]            2,359,296
+│    │    └─BatchNorm2d: 3-124                                              [1, 512, 7, 7]            1,024
+│    │    └─QuantIdentity: 3-125                                            [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-70                                                   --                        (recursive)
+│    │    └─QuantIdentity: 3-127                                            --                        (recursive)
+│    │    └─QuantReLU: 3-128                                                [1, 512, 7, 7]            1
+│    └─QuantIdentity: 2-69                                                  --                        (recursive)
+│    │    └─ActQuantProxyFromInjector: 3-129                                --                        (recursive)
+│    └─SimpleQBlock: 2-70                                                   --                        (recursive)
+│    │    └─QuantReLU: 3-130                                                --                        (recursive)
+│    └─AvgPool2d: 2-71                                                      [1, 512, 1, 1]            --
+│    └─QuantIdentity: 2-72                                                  [1, 512, 1, 1]            --
+│    │    └─ActQuantProxyFromInjector: 3-131                                [1, 512, 1, 1]            --
+│    │    └─ActQuantProxyFromInjector: 3-132                                [1, 512, 1, 1]            1
+│    └─Flatten: 2-73                                                        [1, 512]                  --
+=============================================================================================================================
+Total params: 17,613,233
+Trainable params: 17,613,233
+Non-trainable params: 0
+Total mult-adds (M): 0.01
+=============================================================================================================================
+Input size (MB): 0.30
+Forward/backward pass size (MB): 15.05
+Params size (MB): 0.04
+Estimated Total Size (MB): 15.39
+=============================================================================================================================
+
+Epoch: [1 | 20] LR: 0.001
+[0/264] Avg. Train Loss: 0.842 | Top-1 Acc: 39.062% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.798 | Top-1 Acc: 61.632% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.658 | Top-1 Acc: 67.748% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.577 | Top-1 Acc: 71.648% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.528 | Top-1 Acc: 74.375% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.494 | Top-1 Acc: 76.211% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.470 | Top-1 Acc: 77.448% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.444 | Top-1 Acc: 78.949% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.425 | Top-1 Acc: 79.957% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.406 | Top-1 Acc: 80.987% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.392 | Top-1 Acc: 81.756% | Top-5 Acc: 0.000%
+Time for training epoch 0: 18.26 minutes
+Avg. Val Loss: 0.236 | Top-1 Acc: 89.363% | Top-5 Acc: 0.000% | F1: 84.869%
+Time for validation epoch 0: 0.38 minutes
+
+Epoch: [2 | 20] LR: 0.001
+[0/264] Avg. Train Loss: 0.224 | Top-1 Acc: 89.844% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.224 | Top-1 Acc: 90.972% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.227 | Top-1 Acc: 90.345% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.234 | Top-1 Acc: 89.913% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.224 | Top-1 Acc: 90.454% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.213 | Top-1 Acc: 90.989% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.208 | Top-1 Acc: 91.322% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.204 | Top-1 Acc: 91.513% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.203 | Top-1 Acc: 91.556% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.198 | Top-1 Acc: 91.749% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.195 | Top-1 Acc: 91.846% | Top-5 Acc: 0.000%
+Time for training epoch 1: 3.05 minutes
+Avg. Val Loss: 0.039 | Top-1 Acc: 98.698% | Top-5 Acc: 0.000% | F1: 98.367%
+Time for validation epoch 1: 0.34 minutes
+
+Epoch: [3 | 20] LR: 0.001
+[0/264] Avg. Train Loss: 0.209 | Top-1 Acc: 92.969% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.163 | Top-1 Acc: 93.171% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.154 | Top-1 Acc: 93.617% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.145 | Top-1 Acc: 94.037% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.145 | Top-1 Acc: 94.048% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.144 | Top-1 Acc: 94.150% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.141 | Top-1 Acc: 94.317% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.140 | Top-1 Acc: 94.331% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.139 | Top-1 Acc: 94.397% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.140 | Top-1 Acc: 94.365% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.139 | Top-1 Acc: 94.418% | Top-5 Acc: 0.000%
+Time for training epoch 2: 1.65 minutes
+Avg. Val Loss: 0.036 | Top-1 Acc: 98.826% | Top-5 Acc: 0.000% | F1: 98.535%
+Time for validation epoch 2: 0.34 minutes
+
+Epoch: [4 | 20] LR: 0.001
+[0/264] Avg. Train Loss: 0.140 | Top-1 Acc: 92.188% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.140 | Top-1 Acc: 94.242% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.137 | Top-1 Acc: 94.354% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.134 | Top-1 Acc: 94.571% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.134 | Top-1 Acc: 94.673% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.133 | Top-1 Acc: 94.770% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.131 | Top-1 Acc: 94.820% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.130 | Top-1 Acc: 94.894% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.131 | Top-1 Acc: 94.789% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.130 | Top-1 Acc: 94.834% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.129 | Top-1 Acc: 94.837% | Top-5 Acc: 0.000%
+Time for training epoch 3: 1.69 minutes
+Avg. Val Loss: 0.075 | Top-1 Acc: 97.117% | Top-5 Acc: 0.000% | F1: 96.555%
+Time for validation epoch 3: 0.34 minutes
+
+Epoch: [5 | 20] LR: 0.0001
+[0/264] Avg. Train Loss: 0.129 | Top-1 Acc: 96.875% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.107 | Top-1 Acc: 95.920% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.112 | Top-1 Acc: 95.519% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.108 | Top-1 Acc: 95.787% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.108 | Top-1 Acc: 95.759% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.103 | Top-1 Acc: 95.963% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.101 | Top-1 Acc: 96.019% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.098 | Top-1 Acc: 96.145% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.099 | Top-1 Acc: 96.154% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.098 | Top-1 Acc: 96.154% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.097 | Top-1 Acc: 96.190% | Top-5 Acc: 0.000%
+Time for training epoch 4: 1.64 minutes
+Avg. Val Loss: 0.012 | Top-1 Acc: 99.663% | Top-5 Acc: 0.000% | F1: 99.582%
+Time for validation epoch 4: 0.34 minutes
+
+Epoch: [6 | 20] LR: 0.0001
+[0/264] Avg. Train Loss: 0.061 | Top-1 Acc: 96.875% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.076 | Top-1 Acc: 96.991% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.080 | Top-1 Acc: 96.801% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.083 | Top-1 Acc: 96.667% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.083 | Top-1 Acc: 96.637% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.086 | Top-1 Acc: 96.559% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.087 | Top-1 Acc: 96.576% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.088 | Top-1 Acc: 96.521% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.085 | Top-1 Acc: 96.654% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.085 | Top-1 Acc: 96.679% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.085 | Top-1 Acc: 96.686% | Top-5 Acc: 0.000%
+Time for training epoch 5: 1.63 minutes
+Avg. Val Loss: 0.019 | Top-1 Acc: 99.430% | Top-5 Acc: 0.000% | F1: 99.291%
+Time for validation epoch 5: 0.35 minutes
+
+Epoch: [7 | 20] LR: 0.0001
+[0/264] Avg. Train Loss: 0.037 | Top-1 Acc: 98.438% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.084 | Top-1 Acc: 96.615% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.076 | Top-1 Acc: 96.963% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.075 | Top-1 Acc: 97.013% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.077 | Top-1 Acc: 96.987% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.078 | Top-1 Acc: 97.024% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.079 | Top-1 Acc: 96.890% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.079 | Top-1 Acc: 96.884% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.080 | Top-1 Acc: 96.886% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.080 | Top-1 Acc: 96.915% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.080 | Top-1 Acc: 96.881% | Top-5 Acc: 0.000%
+Time for training epoch 6: 1.64 minutes
+Avg. Val Loss: 0.019 | Top-1 Acc: 99.337% | Top-5 Acc: 0.000% | F1: 99.174%
+Time for validation epoch 6: 0.35 minutes
+
+Epoch: [8 | 20] LR: 0.0001
+[0/264] Avg. Train Loss: 0.037 | Top-1 Acc: 97.656% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.086 | Top-1 Acc: 96.557% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.079 | Top-1 Acc: 96.875% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.081 | Top-1 Acc: 96.707% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.079 | Top-1 Acc: 96.860% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.078 | Top-1 Acc: 96.893% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.079 | Top-1 Acc: 96.880% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.079 | Top-1 Acc: 96.858% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.078 | Top-1 Acc: 96.864% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.078 | Top-1 Acc: 96.855% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.079 | Top-1 Acc: 96.836% | Top-5 Acc: 0.000%
+Time for training epoch 7: 1.69 minutes
+Avg. Val Loss: 0.010 | Top-1 Acc: 99.640% | Top-5 Acc: 0.000% | F1: 99.553%
+Time for validation epoch 7: 0.35 minutes
+
+Epoch: [9 | 20] LR: 0.0001
+[0/264] Avg. Train Loss: 0.044 | Top-1 Acc: 97.656% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.071 | Top-1 Acc: 97.309% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.076 | Top-1 Acc: 97.155% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.078 | Top-1 Acc: 96.994% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.076 | Top-1 Acc: 97.046% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.078 | Top-1 Acc: 97.018% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.076 | Top-1 Acc: 97.009% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.076 | Top-1 Acc: 97.059% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.074 | Top-1 Acc: 97.118% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.073 | Top-1 Acc: 97.144% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.073 | Top-1 Acc: 97.144% | Top-5 Acc: 0.000%
+Time for training epoch 8: 1.64 minutes
+Avg. Val Loss: 0.011 | Top-1 Acc: 99.709% | Top-5 Acc: 0.000% | F1: 99.642%
+Time for validation epoch 8: 0.35 minutes
+
+Epoch: [10 | 20] LR: 1e-05
+[0/264] Avg. Train Loss: 0.089 | Top-1 Acc: 95.312% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.367% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.450% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.068 | Top-1 Acc: 97.498% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.470% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.070 | Top-1 Acc: 97.370% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.070 | Top-1 Acc: 97.378% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.070 | Top-1 Acc: 97.379% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.070 | Top-1 Acc: 97.383% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.070 | Top-1 Acc: 97.367% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.369% | Top-5 Acc: 0.000%
+Time for training epoch 9: 1.69 minutes
+Avg. Val Loss: 0.007 | Top-1 Acc: 99.837% | Top-5 Acc: 0.000% | F1: 99.799%
+Time for validation epoch 9: 0.34 minutes
+
+Epoch: [11 | 20] LR: 1e-05
+[0/264] Avg. Train Loss: 0.051 | Top-1 Acc: 96.875% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.064 | Top-1 Acc: 97.425% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.065 | Top-1 Acc: 97.465% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.320% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.065 | Top-1 Acc: 97.344% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.281% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.065 | Top-1 Acc: 97.328% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.276% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.294% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.297% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.306% | Top-5 Acc: 0.000%
+Time for training epoch 10: 1.71 minutes
+Avg. Val Loss: 0.007 | Top-1 Acc: 99.767% | Top-5 Acc: 0.000% | F1: 99.712%
+Time for validation epoch 10: 0.34 minutes
+
+Epoch: [12 | 20] LR: 1e-05
+[0/264] Avg. Train Loss: 0.051 | Top-1 Acc: 97.656% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.569% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.072 | Top-1 Acc: 97.288% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.478% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.344% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.068 | Top-1 Acc: 97.448% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.378% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.068 | Top-1 Acc: 97.426% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.443% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.434% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.408% | Top-5 Acc: 0.000%
+Time for training epoch 11: 1.65 minutes
+Avg. Val Loss: 0.006 | Top-1 Acc: 99.767% | Top-5 Acc: 0.000% | F1: 99.712%
+Time for validation epoch 11: 0.34 minutes
+
+Epoch: [13 | 20] LR: 1e-05
+[0/264] Avg. Train Loss: 0.052 | Top-1 Acc: 97.656% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.135% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.076 | Top-1 Acc: 97.067% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.071 | Top-1 Acc: 97.261% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.388% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.070 | Top-1 Acc: 97.275% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.071 | Top-1 Acc: 97.258% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.071 | Top-1 Acc: 97.225% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.072 | Top-1 Acc: 97.189% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.073 | Top-1 Acc: 97.131% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.072 | Top-1 Acc: 97.147% | Top-5 Acc: 0.000%
+Time for training epoch 12: 1.69 minutes
+Avg. Val Loss: 0.008 | Top-1 Acc: 99.698% | Top-5 Acc: 0.000% | F1: 99.625%
+Time for validation epoch 12: 0.35 minutes
+
+Epoch: [14 | 20] LR: 1e-05
+[0/264] Avg. Train Loss: 0.110 | Top-1 Acc: 96.875% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.060 | Top-1 Acc: 97.425% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.063 | Top-1 Acc: 97.420% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.231% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.225% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.292% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.278% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.068 | Top-1 Acc: 97.302% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.068 | Top-1 Acc: 97.294% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.354% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.068 | Top-1 Acc: 97.324% | Top-5 Acc: 0.000%
+Time for training epoch 13: 1.71 minutes
+Avg. Val Loss: 0.008 | Top-1 Acc: 99.663% | Top-5 Acc: 0.000% | F1: 99.582%
+Time for validation epoch 13: 0.34 minutes
+
+Epoch: [15 | 20] LR: 1e-05
+[0/264] Avg. Train Loss: 0.031 | Top-1 Acc: 99.219% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.541% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.479% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.065 | Top-1 Acc: 97.508% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.064 | Top-1 Acc: 97.537% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.376% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.363% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.379% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.376% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.390% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.402% | Top-5 Acc: 0.000%
+Time for training epoch 14: 1.69 minutes
+Avg. Val Loss: 0.007 | Top-1 Acc: 99.733% | Top-5 Acc: 0.000% | F1: 99.669%
+Time for validation epoch 14: 0.34 minutes
+
+Epoch: [16 | 20] LR: 1e-05
+[0/264] Avg. Train Loss: 0.022 | Top-1 Acc: 99.219% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.060 | Top-1 Acc: 97.801% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.061 | Top-1 Acc: 97.612% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.062 | Top-1 Acc: 97.627% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.065 | Top-1 Acc: 97.545% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.064 | Top-1 Acc: 97.567% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.065 | Top-1 Acc: 97.547% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.404% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.068 | Top-1 Acc: 97.391% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.068 | Top-1 Acc: 97.387% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.068 | Top-1 Acc: 97.378% | Top-5 Acc: 0.000%
+Time for training epoch 15: 1.71 minutes
+Avg. Val Loss: 0.006 | Top-1 Acc: 99.779% | Top-5 Acc: 0.000% | F1: 99.726%
+Time for validation epoch 15: 0.35 minutes
+
+Epoch: [17 | 20] LR: 1e-05
+[0/264] Avg. Train Loss: 0.051 | Top-1 Acc: 98.438% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.598% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.071 | Top-1 Acc: 97.361% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.360% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.314% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.388% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.393% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.396% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.413% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.424% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.411% | Top-5 Acc: 0.000%
+Time for training epoch 16: 1.70 minutes
+Avg. Val Loss: 0.007 | Top-1 Acc: 99.721% | Top-5 Acc: 0.000% | F1: 99.654%
+Time for validation epoch 16: 0.35 minutes
+
+Epoch: [18 | 20] LR: 1e-05
+[0/264] Avg. Train Loss: 0.126 | Top-1 Acc: 95.312% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.222% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.067 | Top-1 Acc: 97.317% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.068 | Top-1 Acc: 97.330% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.068 | Top-1 Acc: 97.374% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.298% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.071 | Top-1 Acc: 97.223% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.070 | Top-1 Acc: 97.221% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.070 | Top-1 Acc: 97.256% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.301% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.069 | Top-1 Acc: 97.294% | Top-5 Acc: 0.000%
+Time for training epoch 17: 1.64 minutes
+Avg. Val Loss: 0.007 | Top-1 Acc: 99.721% | Top-5 Acc: 0.000% | F1: 99.654%
+Time for validation epoch 17: 0.34 minutes
+
+Epoch: [19 | 20] LR: 1e-05
+[0/264] Avg. Train Loss: 0.139 | Top-1 Acc: 95.312% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.060 | Top-1 Acc: 97.743% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.063 | Top-1 Acc: 97.568% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.063 | Top-1 Acc: 97.577% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.064 | Top-1 Acc: 97.522% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.064 | Top-1 Acc: 97.471% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.467% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.065 | Top-1 Acc: 97.494% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.065 | Top-1 Acc: 97.548% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.065 | Top-1 Acc: 97.513% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.066 | Top-1 Acc: 97.483% | Top-5 Acc: 0.000%
+Time for training epoch 18: 1.65 minutes
+Avg. Val Loss: 0.007 | Top-1 Acc: 99.814% | Top-5 Acc: 0.000% | F1: 99.770%
+Time for validation epoch 18: 0.34 minutes
+
+Epoch: [20 | 20] LR: 1e-05
+[0/264] Avg. Train Loss: 0.037 | Top-1 Acc: 99.219% | Top-5 Acc: 0.000%
+[26/264] Avg. Train Loss: 0.057 | Top-1 Acc: 97.946% | Top-5 Acc: 0.000%
+[52/264] Avg. Train Loss: 0.061 | Top-1 Acc: 97.656% | Top-5 Acc: 0.000%
+[78/264] Avg. Train Loss: 0.056 | Top-1 Acc: 97.884% | Top-5 Acc: 0.000%
+[104/264] Avg. Train Loss: 0.059 | Top-1 Acc: 97.798% | Top-5 Acc: 0.000%
+[130/264] Avg. Train Loss: 0.059 | Top-1 Acc: 97.758% | Top-5 Acc: 0.000%
+[156/264] Avg. Train Loss: 0.061 | Top-1 Acc: 97.666% | Top-5 Acc: 0.000%
+[182/264] Avg. Train Loss: 0.060 | Top-1 Acc: 97.695% | Top-5 Acc: 0.000%
+[208/264] Avg. Train Loss: 0.061 | Top-1 Acc: 97.675% | Top-5 Acc: 0.000%
+[234/264] Avg. Train Loss: 0.062 | Top-1 Acc: 97.640% | Top-5 Acc: 0.000%
+[260/264] Avg. Train Loss: 0.063 | Top-1 Acc: 97.641% | Top-5 Acc: 0.000%
+Time for training epoch 19: 1.66 minutes
+Avg. Val Loss: 0.007 | Top-1 Acc: 99.814% | Top-5 Acc: 0.000% | F1: 99.770%
+Time for validation epoch 19: 0.34 minutes
+
+Testing on best model...
+Loaded best model /home/zhiyong/Git/dct-cryptonets/dct-cryptonets/checkpoint/faceforensic/resnet18_qat_dct_v2/best.tar (epoch 9)
+Avg. Val Loss: 0.007 | Acc: 8588/8602 (99.84%) | F1: 99.799%
+Avg. Test Loss: 0.007 | Acc: 8588/8602 (99.84%) | F1: 99.799%
+Done

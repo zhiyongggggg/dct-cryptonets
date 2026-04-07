@@ -1,0 +1,34 @@
+-----General parameters-----
+model=ResNet20qat
+dataset=FaceForensic
+num_classes=2
+dataset_path=/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/dataset/FaceForensic
+checkpoint_path=
+bit_width=4
+-----Homomorphic encryption parameters-----
+fhe_mode=execute
+calib_batch_size=100
+test_batch_size=1
+test_subset=1
+rounding_threshold_bits=7
+n_bits=5
+p_error=0.05
+reliability_test=True
+verbose=True
+-----DCT parameters-----
+dct_status=N
+image_size=448
+
+
+Using GPU: True
+
+Traceback (most recent call last):
+  File "/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/homomorphic_eval.py", line 475, in <module>
+    main()
+  File "/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/homomorphic_eval.py", line 258, in main
+    model_dict[params.model](**model_arg_dict),
+  File "/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/models/backbone.py", line 458, in ResNet20QAT
+    model = ResNetQDCT(
+  File "/home/zhiyong/Git/dct-cryptonets/dct-cryptonets/models/backbone.py", line 336, in __init__
+    net_perturbation = all_network_perturbations[f'{list_out_dims[0]}_{in_channels}_{img_size}']
+KeyError: '48_3_448'
